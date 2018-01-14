@@ -38,7 +38,7 @@ export default class Form extends Component {
 
     this.state = {
       errors: {},
-      values: {},
+      values: props.initialValues,
     }
 
     this.cloneTree = this.cloneTree.bind(this)
@@ -251,10 +251,16 @@ Form.propTypes = {
    * The form submit callback. Receives the serialized form as an object.
   **/
   onSubmit: func,
+  /**
+   * The initials values object whose keys mirror form field structure.
+   * This object sets the form's initial values
+   */
+  initialValues: object, // eslint-disable-line
 }
 
 Form.defaultProps = {
   children: null,
   validation: {},
+  initialValues: {},
   onSubmit: () => undefined,
 }

@@ -195,3 +195,26 @@ function isNumber (value) {
 </FormState>
 ```
 
+### Setting Initial Values
+
+It's possible to set the initial values of the form by passing an object whose
+keys mirror form field structure, specifying the initial value for the fields.
+
+```jsx
+const FormState = require('./src/FormState.js');
+const Input = require('./src/CustomInput.js');
+
+<Form initialValues={{
+  name: 'Obi One Kenobi',
+  address: {
+    street: 'A galaxy far far away',
+    number: 123,
+  }
+}}>
+  <Input name="name" title="Full name" />
+  <fieldset name="address">
+    <Input name="street" title="Street" />
+    <Input type="number" name="number" title="House Number" />
+  </fieldset>
+ </Form>
+```
