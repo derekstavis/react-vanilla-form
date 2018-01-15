@@ -8,8 +8,10 @@ import {
 import {
   ap,
   assoc,
+  contains,
   defaultTo,
   is,
+  isEmpty,
   isNil,
   lensPath,
   map,
@@ -48,9 +50,24 @@ export default class Form extends Component {
   }
 
   handleChange (path, event) {
-    const lens = lensPath(path)
+    const {
+      value: targetValue,
+      checked: targetChecked,
+    } = event.target
 
-    const values = set(lens, event.target.value, this.state.values)
+    const checked =
+      (!is(Boolean, targetValue))
+        ? targetChecked
+        : undefined
+
+    const value = isEmpty(checked)
+      ? targetValue
+      : targetChecked
+
+    console.log({ targetValue, targetChecked, value })
+
+    const lens = lensPath(path)
+    const values = set(lens, value, this.state.values)
     const validate = view(lens, this.props.validation)
 
     if (!validate) {
@@ -112,6 +129,30 @@ export default class Form extends Component {
     const lens = lensPath(path)
 
     if (element.props.children) {
+      if (element.props.name) {
+        return React.cloneElement(element, {
+          error: view(lens, this.state.errors),
+          value: view(lens, this.state.values),
+          onChange: partial(this.handleChange, [path]),
+          children: React.Children.map(
+            element.props.children,
+            partialRight(this.cloneTree, [[...parentPath, ...name]])
+          ),
+        })
+      }
+
+      if (!isNil(element.props.checked)) {
+        return React.cloneElement(element, {
+          error: view(lens, this.state.errors),
+          checked: view(lens, this.state.values),
+          onChange: partial(this.handleChange, [path]),
+          children: React.Children.map(
+            element.props.children,
+            partialRight(this.cloneTree, [[...parentPath, ...name]])
+          ),
+        })
+      }
+
       return React.cloneElement(element, {
         children: React.Children.map(
           element.props.children,

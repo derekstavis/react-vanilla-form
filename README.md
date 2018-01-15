@@ -69,10 +69,53 @@ const FormState = require('./src/FormState.js');
   </label>
   <input type="number" name="age" />
   <br />
+  <label htmlFor="civil_state">
+    Civil State
+  </label>
+  <label htmlFor="civil_state_single">
+    <input
+      type="radio"
+      name="civil_state"
+      id="civil_state_single"
+      value="single"
+    />
+    Single
+  </label>
+  <label htmlFor="civil_state_married">
+    <input
+      type="radio"
+      name="civil_state"
+      id="civil_state_married"
+      value="married"
+    />
+    Married
+  </label>
+  <label htmlFor="civil_state_widowed">
+    <input
+      type="radio"
+      name="civil_state"
+      id="civil_state_widowed"
+      value="widowed"
+    />
+    Widowed
+  </label>
+  <br />
   <label htmlFor="address">
     Address
   </label>
   <input type="text" name="address" />
+  <br />
+  <label htmlFor="state">
+    State
+  </label>
+  <select name="state">
+    <option value="ca">California</option>
+    <option value="ny">New York</option>
+  </select>
+  <label htmlFor="accept_terms">
+    <input type="checkbox" name="accept_terms" />
+    Accept the terms of service
+  </label>
   <br />
   <button>Submit!</button>
 </FormState>
