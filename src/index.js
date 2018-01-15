@@ -23,6 +23,7 @@ import {
   set,
   view,
   when,
+  not,
 } from 'ramda'
 
 
@@ -108,7 +109,7 @@ export default class Form extends Component {
       return element
     }
 
-    const name = element.props.name ? [element.props.name] : []
+    const name = not(isNil(element.props.name)) ? [element.props.name] : []
     const path = [...parentPath, ...name]
     const lens = lensPath(path)
 
