@@ -123,7 +123,7 @@ export default class Form extends Component {
     if (name.length > 0) {
       return React.cloneElement(element, {
         error: view(lens, this.state.errors),
-        value: view(lens, this.state.values),
+        value: defaultToEmptyString(view(lens, this.state.values)),
         onChange: partial(this.handleChange, [path]),
       })
     }
