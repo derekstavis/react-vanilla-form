@@ -14,6 +14,7 @@ import {
   lensPath,
   map,
   mergeAll,
+  not,
   partial,
   partialRight,
   pipe,
@@ -59,7 +60,7 @@ export default class Form extends Component {
     }
 
     if (validate.constructor === Array) {
-      const validationErrors = reject(isNil, ap(validate, [view(lens, values)]))
+      const validationErrors = reject(not, ap(validate, [view(lens, values)]))
 
       if (validationErrors.length > 0) {
         const validation = validationErrors[0]
