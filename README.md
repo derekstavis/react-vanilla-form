@@ -205,7 +205,7 @@ const FormState = require('./src/FormState.js');
 const Input = require('./src/CustomInput.js');
 
 <Form initialValues={{
-  name: 'Obi One Kenobi',
+  name: 'Obi Wan Kenobi',
   address: {
     street: 'A galaxy far far away',
     number: 123,
