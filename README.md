@@ -186,7 +186,7 @@ function isNumber (value) {
     <legend>Address</legend>
     <Input name="street" title="Street" />
     <label htmlFor="street" role="alert" />
-    <Input type="number" name="number" title="House Number" />
+    <Input type="text" name="number" title="House Number" />
     <label htmlFor="number" role="alert" />
     <Input name="postal_code" title="Postal Code" />
     <label htmlFor="postal_code" role="alert" />

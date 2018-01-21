@@ -8,6 +8,7 @@ import {
 import {
   ap,
   assoc,
+  complement,
   defaultTo,
   is,
   isNil,
@@ -50,8 +51,9 @@ export default class Form extends Component {
 
   handleChange (path, event) {
     const lens = lensPath(path)
+    const value = event.target.value
 
-    const values = set(lens, event.target.value, this.state.values)
+    const values = set(lens, value, this.state.values)
     const validate = view(lens, this.props.validation)
 
     if (!validate) {
@@ -60,7 +62,10 @@ export default class Form extends Component {
     }
 
     if (validate.constructor === Array) {
-      const validationErrors = reject(not, ap(validate, [view(lens, values)]))
+      const validationErrors = reject(
+        complement(Boolean),
+        ap(validate, [value])
+      )
 
       if (validationErrors.length > 0) {
         const validation = validationErrors[0]
@@ -176,7 +181,10 @@ export default class Form extends Component {
       const value = defaultTo('', view(lens, this.state.values))
 
       if (is(Array, validation)) {
-        const validationErrors = reject(isNil, ap(validation, [value]))
+        const validationErrors = reject(
+          complement(Boolean),
+          ap(validation, [value])
+        )
 
         if (validationErrors.length > 0) {
           const error = validationErrors[0]
