@@ -23,7 +23,6 @@ import {
   set,
   view,
   when,
-  not,
 } from 'ramda'
 
 
