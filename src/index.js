@@ -10,6 +10,7 @@ import {
   assoc,
   complement,
   defaultTo,
+  equals,
   is,
   isNil,
   lensPath,
@@ -40,24 +41,51 @@ export default class Form extends Component {
 
     this.state = {
       errors: {},
-      values: props.initialValues,
+      data: props.data || {},
     }
 
     this.cloneTree = this.cloneTree.bind(this)
     this.validateTree = this.validateTree.bind(this)
+    this.notifyChangeEvent = this.notifyChangeEvent.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+  }
+
+  componentWillMount () {
+    if (this.props.data) {
+      this.setState({
+        errors: this.validateTree({}, this),
+      })
+    }
+  }
+
+  componentWillReceiveProps (nextProps) {
+    const { data } = nextProps
+
+    if (data && !equals(data, this.props.data)) {
+      const errors = this.validateTree(this.state.errors, this)
+      this.setState({ data, errors })
+    }
+  }
+
+  notifyChangeEvent () {
+    const { onChange } = this.props
+
+    if (typeof onChange === 'function') {
+      const { data, errors } = this.state
+      onChange(data, errors)
+    }
   }
 
   handleChange (path, event) {
     const lens = lensPath(path)
     const value = event.target.value
 
-    const values = set(lens, value, this.state.values)
+    const data = set(lens, value, this.state.data)
     const validate = view(lens, this.props.validation)
 
     if (!validate) {
-      this.setState({ values })
+      this.setState({ data }, this.notifyChangeEvent)
       return
     }
 
@@ -71,23 +99,23 @@ export default class Form extends Component {
         const validation = validationErrors[0]
         const errors = set(lens, validation, this.state.errors)
 
-        this.setState({ errors, values })
+        this.setState({ data, errors }, this.notifyChangeEvent)
         return
       }
 
       const errors = set(lens, null, this.state.errors)
 
-      this.setState({ values, errors })
+      this.setState({ data, errors }, this.notifyChangeEvent)
       return
     }
 
     const validation = validate(
-      defaultToEmptyString(view(lens, values))
+      defaultToEmptyString(view(lens, data))
     )
 
     const errors = set(lens, validation, this.state.errors)
 
-    this.setState({ errors, values })
+    this.setState({ data, errors }, this.notifyChangeEvent)
   }
 
   cloneTree (element, index, parentPath = []) {
@@ -129,7 +157,7 @@ export default class Form extends Component {
     if (name.length > 0) {
       return React.cloneElement(element, {
         error: view(lens, this.state.errors),
-        value: defaultToEmptyString(view(lens, this.state.values)),
+        value: defaultToEmptyString(view(lens, this.state.data)),
         onChange: partial(this.handleChange, [path]),
       })
     }
@@ -178,7 +206,7 @@ export default class Form extends Component {
         return errors
       }
 
-      const value = defaultTo('', view(lens, this.state.values))
+      const value = defaultTo('', view(lens, this.state.data))
 
       if (is(Array, validation)) {
         const validationErrors = reject(
@@ -226,7 +254,7 @@ export default class Form extends Component {
 
     this.setState({ errors })
 
-    this.props.onSubmit(this.state.values)
+    this.props.onSubmit(this.state.data)
   }
 
   render () {
@@ -261,15 +289,30 @@ Form.propTypes = {
   **/
   onSubmit: func,
   /**
-   * The initials values object whose keys mirror form field structure.
-   * This object sets the form's initial values
-   */
-  initialValues: object, // eslint-disable-line
+   * The form change callback. This callback runs on every form control's
+   * `onChange`, right after validations. When this is defined, the form
+   * behaves as a controlled component, and the user is responsible for
+   * updating the form state via `data` prop.
+  **/
+  /**
+   * @callback onChange
+   * @param {object} data
+   * @param {object} errors
+  **/
+  onChange: func,
+  /**
+   * The form data object whose keys mirror form field structure.
+   * Setting this prop will set the form controls' values accordingly.
+   * This can be used for rendering an initial state or to use the form
+   * as a controlled component.
+  **/
+  data: object, // eslint-disable-line
 }
 
 Form.defaultProps = {
   children: null,
-  validation: {},
-  initialValues: {},
+  data: null,
+  onChange: null,
   onSubmit: () => undefined,
+  validation: {},
 }

@@ -195,26 +195,80 @@ function isNumber (value) {
 </FormState>
 ```
 
-### Setting Initial Values
+### Setting form data
 
-It's possible to set the initial values of the form by passing an object whose
-keys mirror form field structure, specifying the initial value for the fields.
+It's possible to set the form data by passing an object whose keys mirror
+form field's structure via `data` prop.
+
+Currently the form keeps an internal state. When the `data` prop change
+the internal state will be synced with the prop's value.
 
 ```jsx
 const FormState = require('./src/FormState.js');
 const Input = require('./src/CustomInput.js');
 
-<Form initialValues={{
-  name: 'Obi Wan Kenobi',
-  address: {
-    street: 'A galaxy far far away',
-    number: 123,
-  }
-}}>
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+function isNumber (value) {
+  return parseInt(value) ? false : 'Should be a number'
+}
+
+<FormState
+  data={{
+    name: 'Obi Wan Kenobi',
+    address: {
+      street: 'A galaxy far far away',
+      number: 'Nevermind',
+    }
+  }}
+  validation={{
+    name: required,
+    address: {
+      street: required,
+      number: [required, isNumber],
+    }
+  }}
+>
+  <Input name="name" title="Full name" />
+  <fieldset name="address">
+    <Input name="street" title="Street" />
+    <Input type="text" name="number" title="House Number" />
+    <label htmlFor="number" role="alert" />
+  </fieldset>
+  <button>Submit!</button>
+ </FormState>
+```
+
+### Getting form data realtime
+
+It's possible to get the form data updates realtime using `onChange` prop.
+This can be useful if you want to render components conditionally based
+on form state.
+
+> *Important:* It's not required to retro-feed `data` prop.
+
+```jsx
+const FormState = require('./src/FormState.js');
+const Input = require('./src/CustomInput.js');
+
+<FormState
+  onChange={data => console.log(data)}
+  data={{
+    name: 'Obi Wan Kenobi',
+    address: {
+      street: 'A galaxy far far away',
+      number: 123,
+    }
+  }}
+>
   <Input name="name" title="Full name" />
   <fieldset name="address">
     <Input name="street" title="Street" />
     <Input type="number" name="number" title="House Number" />
   </fieldset>
- </Form>
+  <button>Submit!</button>
+ </FormState>
 ```
+

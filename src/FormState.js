@@ -11,8 +11,14 @@ class FormState extends React.Component {
     return (
       <div>
         <Form
+          data={this.props.data}
           validation={this.props.validation}
           onSubmit={result => this.setState({ result })}
+          onChange={
+            this.props.onChange
+              ? result => this.setState({ result })
+              : undefined
+          }
         >
           {this.props.children}
         </Form>
@@ -25,6 +31,13 @@ class FormState extends React.Component {
       </div>
     )
   }
+}
+
+FormState.defaultProps = {
+  data: undefined,
+  validation: undefined,
+  onSubmit: undefined,
+  onChange: undefined,
 }
 
 module.exports = FormState
