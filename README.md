@@ -1,19 +1,19 @@
 <img width="196px" align="left" hspace="20px" src="https://upload.wikimedia.org/wikipedia/commons/6/69/IceCreamSandwich.jpg" />
 
 # React Vanilla Form
-> An unobstrusibe form serializer and validator that works by following standards.
+> An unobstrusive form serializer and validator that works by following standards.
 
 <br />
 
 Vanilla Form is a form serialization and validation component built upon
-standards. To obtain the serialized form state the only thing you need to
+standards. To obtain the serialized form data the only thing you need to
 do is to declare your form controls (native or custom!) following the
 standard input interfaces: Using `name`, `htmlFor` and `role` properties
 and wiring `onSubmit` prop to `Form` component.
 
 ### Usage
 
-Difficult to explain with words, eh? Let's see it in practive. Install
+Difficult to explain with words, eh? Let's see it in practice. Install
 `react-vanilla-form` package. The only component you need to import is
 `Form`, which is the default package export:
 
