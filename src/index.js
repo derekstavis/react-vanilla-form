@@ -8,12 +8,16 @@ import {
 import {
   ap,
   assoc,
+  complement,
+  contains,
   defaultTo,
+  equals,
   is,
   isNil,
   lensPath,
   map,
   mergeAll,
+  not,
   partial,
   partialRight,
   pipe,
@@ -38,50 +42,80 @@ export default class Form extends Component {
 
     this.state = {
       errors: {},
-      values: props.initialValues,
+      data: props.data || {},
     }
 
     this.cloneTree = this.cloneTree.bind(this)
     this.validateTree = this.validateTree.bind(this)
+    this.notifyChangeEvent = this.notifyChangeEvent.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
+  componentWillMount () {
+    if (this.props.data) {
+      this.setState({
+        errors: this.validateTree({}, this),
+      })
+    }
+  }
+
+  componentWillReceiveProps (nextProps) {
+    const { data } = nextProps
+
+    if (data && !equals(data, this.props.data)) {
+      const errors = this.validateTree(this.state.errors, this)
+      this.setState({ data, errors })
+    }
+  }
+
+  notifyChangeEvent () {
+    const { onChange } = this.props
+
+    if (typeof onChange === 'function') {
+      const { data, errors } = this.state
+      onChange(data, errors)
+    }
+  }
+
   handleChange (path, event) {
     const lens = lensPath(path)
+    const value = contains(event.target.value, ['on', 'off'])
+      ? event.target.checked
+      : event.target.value
 
-    const values = set(lens, event.target.value, this.state.values)
+    const data = set(lens, value, this.state.data)
     const validate = view(lens, this.props.validation)
 
-    if (!validate) {
-      this.setState({ values })
-      return
+    if (typeof validate === 'function') {
+      const error = validate(defaultToEmptyString(view(lens, data)))
+      const errors = set(lens, error, this.state.errors)
+
+      this.setState({ data, errors }, this.notifyChangeEvent)
     }
 
-    if (validate.constructor === Array) {
-      const validationErrors = reject(isNil, ap(validate, [view(lens, values)]))
+    if (validate && validate.constructor === Array) {
+      const validationErrors = reject(
+        complement(Boolean),
+        ap(validate, [value])
+      )
 
       if (validationErrors.length > 0) {
-        const validation = validationErrors[0]
-        const errors = set(lens, validation, this.state.errors)
+        const error = validationErrors[0]
+        const errors = set(lens, error, this.state.errors)
 
-        this.setState({ errors, values })
+        this.setState({ data, errors }, this.notifyChangeEvent)
         return
       }
 
       const errors = set(lens, null, this.state.errors)
 
-      this.setState({ values, errors })
+      this.setState({ data, errors }, this.notifyChangeEvent)
       return
     }
 
-    const validation = validate(
-      defaultToEmptyString(view(lens, values))
-    )
-
-    const errors = set(lens, validation, this.state.errors)
-
-    this.setState({ errors, values })
+    this.setState({ data }, this.notifyChangeEvent)
+    return
   }
 
   cloneTree (element, index, parentPath = []) {
@@ -107,24 +141,53 @@ export default class Form extends Component {
       return element
     }
 
-    const name = element.props.name ? [element.props.name] : []
+    const name = isNil(element.props.name) ? [] : [element.props.name]
     const path = [...parentPath, ...name]
-    const lens = lensPath(path)
+
+    if (element.props.name) {
+      const lens = lensPath(path)
+      const value = view(lens, this.state.data)
+      const onChange = partial(this.handleChange, [path])
+
+      if (element.props.children) {
+        if (typeof value === 'object') {
+          return React.cloneElement(element, {
+            children: React.Children.map(
+              element.props.children,
+              partialRight(this.cloneTree, [path])
+            ),
+          })
+        }
+
+        return React.cloneElement(element, {
+          onChange,
+          value,
+          children: React.Children.map(
+            element.props.children,
+            partialRight(this.cloneTree, [path])
+          ),
+        })
+      }
+
+      if (is(Boolean, value)) {
+        return React.cloneElement(element, {
+          checked: value,
+          onChange,
+        })
+      }
+
+      return React.cloneElement(element, {
+        value,
+        onChange,
+      })
+    }
 
     if (element.props.children) {
       return React.cloneElement(element, {
         children: React.Children.map(
           element.props.children,
-          partialRight(this.cloneTree, [[...parentPath, ...name]])
+          partialRight(this.cloneTree, [path])
         ),
-      })
-    }
-
-    if (name.length > 0) {
-      return React.cloneElement(element, {
-        error: view(lens, this.state.errors),
-        value: defaultToEmptyString(view(lens, this.state.values)),
-        onChange: partial(this.handleChange, [path]),
       })
     }
 
@@ -172,10 +235,13 @@ export default class Form extends Component {
         return errors
       }
 
-      const value = defaultTo('', view(lens, this.state.values))
+      const value = defaultTo('', view(lens, this.state.data))
 
       if (is(Array, validation)) {
-        const validationErrors = reject(isNil, ap(validation, [value]))
+        const validationErrors = reject(
+          complement(Boolean),
+          ap(validation, [value])
+        )
 
         if (validationErrors.length > 0) {
           const error = validationErrors[0]
@@ -217,7 +283,7 @@ export default class Form extends Component {
 
     this.setState({ errors })
 
-    this.props.onSubmit(this.state.values)
+    this.props.onSubmit(this.state.data)
   }
 
   render () {
@@ -252,15 +318,30 @@ Form.propTypes = {
   **/
   onSubmit: func,
   /**
-   * The initials values object whose keys mirror form field structure.
-   * This object sets the form's initial values
-   */
-  initialValues: object, // eslint-disable-line
+   * The form change callback. This callback runs on every form control's
+   * `onChange`, right after validations. When this is defined, the form
+   * behaves as a controlled component, and the user is responsible for
+   * updating the form state via `data` prop.
+  **/
+  /**
+   * @callback onChange
+   * @param {object} data
+   * @param {object} errors
+  **/
+  onChange: func,
+  /**
+   * The form data object whose keys mirror form field structure.
+   * Setting this prop will set the form controls' values accordingly.
+   * This can be used for rendering an initial state or to use the form
+   * as a controlled component.
+  **/
+  data: object, // eslint-disable-line
 }
 
 Form.defaultProps = {
   children: null,
-  validation: {},
-  initialValues: {},
+  data: null,
+  onChange: null,
   onSubmit: () => undefined,
+  validation: {},
 }
