@@ -4,10 +4,8 @@ module.exports = {
   title: 'React Vanilla Form',
   showSidebar: false,
   sections: [
-    {
-      content: 'README.md',
-      components: 'src/index.js',
-    },
+    { content: 'README.md' },
+    { components: 'src/index.js' },
   ],
   require: [
     'milligram',
