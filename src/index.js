@@ -9,6 +9,7 @@ import {
   ap,
   assoc,
   complement,
+  contains,
   defaultTo,
   equals,
   is,
@@ -79,25 +80,29 @@ export default class Form extends Component {
 
   handleChange (path, event) {
     const lens = lensPath(path)
-    const value = event.target.value
+    const value = contains(event.target.value, ['on', 'off'])
+      ? event.target.checked
+      : event.target.value
 
     const data = set(lens, value, this.state.data)
     const validate = view(lens, this.props.validation)
 
-    if (!validate) {
-      this.setState({ data }, this.notifyChangeEvent)
-      return
+    if (typeof validate === 'function') {
+      const error = validate(defaultToEmptyString(view(lens, data)))
+      const errors = set(lens, error, this.state.errors)
+
+      this.setState({ data, errors }, this.notifyChangeEvent)
     }
 
-    if (validate.constructor === Array) {
+    if (validate && validate.constructor === Array) {
       const validationErrors = reject(
         complement(Boolean),
         ap(validate, [value])
       )
 
       if (validationErrors.length > 0) {
-        const validation = validationErrors[0]
-        const errors = set(lens, validation, this.state.errors)
+        const error = validationErrors[0]
+        const errors = set(lens, error, this.state.errors)
 
         this.setState({ data, errors }, this.notifyChangeEvent)
         return
@@ -109,13 +114,8 @@ export default class Form extends Component {
       return
     }
 
-    const validation = validate(
-      defaultToEmptyString(view(lens, data))
-    )
-
-    const errors = set(lens, validation, this.state.errors)
-
-    this.setState({ data, errors }, this.notifyChangeEvent)
+    this.setState({ data }, this.notifyChangeEvent)
+    return
   }
 
   cloneTree (element, index, parentPath = []) {
@@ -141,24 +141,53 @@ export default class Form extends Component {
       return element
     }
 
-    const name = not(isNil(element.props.name)) ? [element.props.name] : []
+    const name = isNil(element.props.name) ? [] : [element.props.name]
     const path = [...parentPath, ...name]
-    const lens = lensPath(path)
+
+    if (element.props.name) {
+      const lens = lensPath(path)
+      const value = view(lens, this.state.data)
+      const onChange = partial(this.handleChange, [path])
+
+      if (element.props.children) {
+        if (typeof value === 'object') {
+          return React.cloneElement(element, {
+            children: React.Children.map(
+              element.props.children,
+              partialRight(this.cloneTree, [path])
+            ),
+          })
+        }
+
+        return React.cloneElement(element, {
+          onChange,
+          value,
+          children: React.Children.map(
+            element.props.children,
+            partialRight(this.cloneTree, [path])
+          ),
+        })
+      }
+
+      if (is(Boolean, value)) {
+        return React.cloneElement(element, {
+          checked: value,
+          onChange,
+        })
+      }
+
+      return React.cloneElement(element, {
+        value,
+        onChange,
+      })
+    }
 
     if (element.props.children) {
       return React.cloneElement(element, {
         children: React.Children.map(
           element.props.children,
-          partialRight(this.cloneTree, [[...parentPath, ...name]])
+          partialRight(this.cloneTree, [path])
         ),
-      })
-    }
-
-    if (name.length > 0) {
-      return React.cloneElement(element, {
-        error: view(lens, this.state.errors),
-        value: defaultToEmptyString(view(lens, this.state.data)),
-        onChange: partial(this.handleChange, [path]),
       })
     }
 

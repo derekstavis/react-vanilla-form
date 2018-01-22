@@ -260,14 +260,28 @@ const Input = require('./src/CustomInput.js');
     address: {
       street: 'A galaxy far far away',
       number: 123,
-    }
+      state: "ny",
+    },
+    accepted: false,
   }}
 >
   <Input name="name" title="Full name" />
   <fieldset name="address">
     <Input name="street" title="Street" />
     <Input type="number" name="number" title="House Number" />
+    <label htmlFor="state">
+      State
+    </label>
+    <select name="state">
+      <option value="ca">California</option>
+      <option value="ny">New York</option>
+    </select>
   </fieldset>
+  <label htmlFor="accept_terms">
+    <input type="checkbox" name="accepted" />
+    Accept the terms of service
+  </label>
+  <br />
   <button>Submit!</button>
  </FormState>
 ```
