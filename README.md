@@ -12,4 +12,4 @@ standard input interfaces: Using `name`, `htmlFor` and `role` properties
 and wiring `onSubmit` prop to `Form` component.
 
 See the full documentation and live examples at
-http://derek.github.stavis.me/react-vanilla-forms.
+http://derek.github.stavis.me/react-vanilla-form.
