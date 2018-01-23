@@ -3,6 +3,7 @@ import {
   node,
   object,
   func,
+  string,
 } from 'prop-types'
 
 import {
@@ -336,6 +337,7 @@ Form.propTypes = {
    * as a controlled component.
   **/
   data: object, // eslint-disable-line
+  className: string,
 }
 
 Form.defaultProps = {
@@ -344,4 +346,5 @@ Form.defaultProps = {
   onChange: null,
   onSubmit: () => undefined,
   validation: {},
+  string: '',
 }
