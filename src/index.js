@@ -148,6 +148,7 @@ export default class Form extends Component {
     if (element.props.name) {
       const lens = lensPath(path)
       const value = view(lens, this.state.data)
+      const error = view(lens, this.state.errors)
       const onChange = partial(this.handleChange, [path])
 
       if (element.props.children) {
@@ -163,6 +164,7 @@ export default class Form extends Component {
         return React.cloneElement(element, {
           onChange,
           value,
+          error,
           children: React.Children.map(
             element.props.children,
             partialRight(this.cloneTree, [path])
@@ -172,12 +174,14 @@ export default class Form extends Component {
 
       if (is(Boolean, value)) {
         return React.cloneElement(element, {
+          error,
           checked: value,
           onChange,
         })
       }
 
       return React.cloneElement(element, {
+        error,
         value,
         onChange,
       })
