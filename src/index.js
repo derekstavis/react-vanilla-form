@@ -13,6 +13,7 @@ import {
   contains,
   defaultTo,
   equals,
+  filter,
   is,
   isNil,
   lensPath,
@@ -21,6 +22,7 @@ import {
   not,
   partial,
   partialRight,
+  pathEq,
   pipe,
   reduce,
   reject,
@@ -119,7 +121,7 @@ export default class Form extends Component {
     return
   }
 
-  cloneTree (element, index, parentPath = []) {
+  cloneTree (element, index, parentElement, parentPath = []) {
     if (typeof element === 'string') {
       return element
     }
@@ -156,10 +158,25 @@ export default class Form extends Component {
         ? { onChange: partial(this.handleChange, [path]) }
         : {}
 
+      if (parentElement) {
+        const siblings = filter(
+          pathEq(['props', 'name'], element.props.name),
+          parentElement.props.children
+        )
+
+        if (siblings.length > 1) {
+          return React.cloneElement(element, {
+            ...error,
+            checked: value === element.props.value,
+            ...onChange,
+          })
+        }
+      }
+
       if (element.props.children) {
         const children = React.Children.map(
           element.props.children,
-          partialRight(this.cloneTree, [path])
+          partialRight(this.cloneTree, [element, path])
         )
 
         if (typeof value === 'object') {
@@ -193,7 +210,7 @@ export default class Form extends Component {
       return React.cloneElement(element, {
         children: React.Children.map(
           element.props.children,
-          partialRight(this.cloneTree, [path])
+          partialRight(this.cloneTree, [element, path])
         ),
       })
     }
@@ -298,7 +315,7 @@ export default class Form extends Component {
       <form onSubmit={this.handleSubmit}>
         {React.Children.map(
           this.props.children,
-          this.cloneTree
+          partialRight(this.cloneTree, [this, []])
         )}
       </form>
     )

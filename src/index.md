@@ -253,6 +253,11 @@ const Input = require('./CustomInput.js');
   }}
 >
   <Input name="name" title="Full name" />
+  <label htmlFor="civil_state">
+    Civil State
+  </label>
+  <input type="radio" name="civil_state" value="married" /> Married
+  <input type="radio" name="civil_state" value="single" /> Single
   <fieldset name="address">
     <Input name="street" title="Street" />
     <Input type="number" name="number" title="House Number" />
