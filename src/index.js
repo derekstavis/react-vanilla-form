@@ -376,5 +376,4 @@ Form.defaultProps = {
   onChange: null,
   onSubmit: () => undefined,
   validation: {},
-  string: '',
 }
