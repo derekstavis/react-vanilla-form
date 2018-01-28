@@ -152,7 +152,9 @@ export default class Form extends Component {
       const error = customErrorProp
         ? { [customErrorProp]: view(lens, this.state.errors) }
         : {}
-      const onChange = partial(this.handleChange, [path])
+      const onChange = element.type !== 'fieldset'
+        ? { onChange: partial(this.handleChange, [path]) }
+        : {}
 
       if (element.props.children) {
         const children = React.Children.map(
@@ -166,7 +168,7 @@ export default class Form extends Component {
 
         return React.cloneElement(element, {
           ...error,
-          onChange,
+          ...onChange,
           value,
           children,
         })
@@ -176,14 +178,14 @@ export default class Form extends Component {
         return React.cloneElement(element, {
           ...error,
           checked: value,
-          onChange,
+          ...onChange,
         })
       }
 
       return React.cloneElement(element, {
         ...error,
         value,
-        onChange,
+        ...onChange,
       })
     }
 
