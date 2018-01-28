@@ -273,3 +273,42 @@ const Input = require('./CustomInput.js');
  </FormState>
 ```
 
+### Custom error properties
+
+It is possible to receive the error message into the validated field via
+props by configuring the error prop name with `customErrorProp` prop.
+
+Let's say we want to improve the custom input component to include an
+`errorMessage` prop:
+
+```jsx static
+const Input = ({ name, type, onChange, title, value, errorMessage }) => (
+  <div>
+    <label htmlFor={name}>{title}</label>
+    <input {...{ name, type, onChange, value }} />
+    <label>{errorMessage}</label>
+  </div>
+)
+```
+
+Configure `customErrorProp="errorMessage"` on the form with the prop name:
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+<FormState
+  validation={{ name: required }}
+  customErrorProp="errorMessage"
+>
+  <Input name="name" title="Full name" />
+  <button>Submit!</button>
+</FormState>
+```
+
+Now the custom input will receive the validation error as a prop.
+

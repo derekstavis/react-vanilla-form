@@ -146,42 +146,42 @@ export default class Form extends Component {
     const path = [...parentPath, ...name]
 
     if (element.props.name) {
+      const { customErrorProp } = this.props
       const lens = lensPath(path)
       const value = view(lens, this.state.data)
-      const error = view(lens, this.state.errors)
+      const error = customErrorProp
+        ? { [customErrorProp]: view(lens, this.state.errors) }
+        : {}
       const onChange = partial(this.handleChange, [path])
 
       if (element.props.children) {
+        const children = React.Children.map(
+          element.props.children,
+          partialRight(this.cloneTree, [path])
+        )
+
         if (typeof value === 'object') {
-          return React.cloneElement(element, {
-            children: React.Children.map(
-              element.props.children,
-              partialRight(this.cloneTree, [path])
-            ),
-          })
+          return React.cloneElement(element, { children })
         }
 
         return React.cloneElement(element, {
+          ...error,
           onChange,
           value,
-          error,
-          children: React.Children.map(
-            element.props.children,
-            partialRight(this.cloneTree, [path])
-          ),
+          children,
         })
       }
 
       if (is(Boolean, value)) {
         return React.cloneElement(element, {
-          error,
+          ...error,
           checked: value,
           onChange,
         })
       }
 
       return React.cloneElement(element, {
-        error,
+        ...error,
         value,
         onChange,
       })
@@ -341,11 +341,18 @@ Form.propTypes = {
    * as a controlled component.
   **/
   data: object, // eslint-disable-line
+  /**
+   * A property name to inject the error message in the named field.
+   * This is useful for input wrappers with builtin error label, commonly
+   * found in UI libraries.
+  **/
+  customErrorProp: string,
   className: string,
 }
 
 Form.defaultProps = {
   children: null,
+  customErrorProp: undefined,
   data: null,
   onChange: null,
   onSubmit: () => undefined,
