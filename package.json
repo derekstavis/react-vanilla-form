@@ -1,7 +1,13 @@
 {
   "name": "react-vanilla-form",
   "version": "0.2.0",
-  "description": "An unobstrusibe form serializer and validator that works by following standards.",
+  "description": "An unobstrusive form serializer and validator that works by following standards.",
+  "keywords": [
+    "react",
+    "form",
+    "validation",
+    "serialization"
+  ],
   "main": "dist/index.js",
   "repository": "https://github.com/derekstavis/react-vanilla-form.git",
   "author": "Derek Stavis",
