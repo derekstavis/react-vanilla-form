@@ -1,7 +1,13 @@
 {
   "name": "react-vanilla-form",
-  "version": "0.1.0",
-  "description": "An unobstrusibe form serializer and validator that works by following standards.",
+  "version": "0.2.1",
+  "description": "An unobstrusive form serializer and validator that works by following standards.",
+  "keywords": [
+    "react",
+    "form",
+    "validation",
+    "serialization"
+  ],
   "main": "dist/index.js",
   "repository": "https://github.com/derekstavis/react-vanilla-form.git",
   "author": "Derek Stavis",
@@ -18,7 +24,9 @@
     "build": "babel src/index.js --out-file dist/index.js"
   },
   "peerDependencies": {
-    "react": "*"
+    "prop-types": "*",
+    "react": "*",
+    "react-dom": "*"
   },
   "dependencies": {
     "ramda": "0.25.0"
@@ -27,6 +35,7 @@
     "babel-cli": "^6.2.0",
     "babel-core": "^6.2.0",
     "babel-loader": "^7.1.2",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
     "css-loader": "^0.28.8",

@@ -13,6 +13,7 @@ import {
   contains,
   defaultTo,
   equals,
+  filter,
   is,
   isNil,
   lensPath,
@@ -21,6 +22,7 @@ import {
   not,
   partial,
   partialRight,
+  pathEq,
   pipe,
   reduce,
   reject,
@@ -119,7 +121,7 @@ export default class Form extends Component {
     return
   }
 
-  cloneTree (element, index, parentPath = []) {
+  cloneTree (element, index, parentElement, parentPath = []) {
     if (typeof element === 'string') {
       return element
     }
@@ -146,40 +148,61 @@ export default class Form extends Component {
     const path = [...parentPath, ...name]
 
     if (element.props.name) {
+      const { customErrorProp } = this.props
       const lens = lensPath(path)
       const value = view(lens, this.state.data)
-      const onChange = partial(this.handleChange, [path])
+      const error = customErrorProp
+        ? { [customErrorProp]: view(lens, this.state.errors) }
+        : {}
+      const onChange = element.type !== 'fieldset'
+        ? { onChange: partial(this.handleChange, [path]) }
+        : {}
+
+      if (parentElement) {
+        const siblings = filter(
+          pathEq(['props', 'name'], element.props.name),
+          parentElement.props.children
+        )
+
+        if (siblings.length > 1) {
+          return React.cloneElement(element, {
+            ...error,
+            checked: value === element.props.value,
+            ...onChange,
+          })
+        }
+      }
 
       if (element.props.children) {
+        const children = React.Children.map(
+          element.props.children,
+          partialRight(this.cloneTree, [element, path])
+        )
+
         if (typeof value === 'object') {
-          return React.cloneElement(element, {
-            children: React.Children.map(
-              element.props.children,
-              partialRight(this.cloneTree, [path])
-            ),
-          })
+          return React.cloneElement(element, { children })
         }
 
         return React.cloneElement(element, {
-          onChange,
+          ...error,
+          ...onChange,
           value,
-          children: React.Children.map(
-            element.props.children,
-            partialRight(this.cloneTree, [path])
-          ),
+          children,
         })
       }
 
       if (is(Boolean, value)) {
         return React.cloneElement(element, {
+          ...error,
           checked: value,
-          onChange,
+          ...onChange,
         })
       }
 
       return React.cloneElement(element, {
+        ...error,
         value,
-        onChange,
+        ...onChange,
       })
     }
 
@@ -187,7 +210,7 @@ export default class Form extends Component {
       return React.cloneElement(element, {
         children: React.Children.map(
           element.props.children,
-          partialRight(this.cloneTree, [path])
+          partialRight(this.cloneTree, [element, path])
         ),
       })
     }
@@ -292,7 +315,7 @@ export default class Form extends Component {
       <form onSubmit={this.handleSubmit}>
         {React.Children.map(
           this.props.children,
-          this.cloneTree
+          partialRight(this.cloneTree, [this, []])
         )}
       </form>
     )
@@ -337,14 +360,20 @@ Form.propTypes = {
    * as a controlled component.
   **/
   data: object, // eslint-disable-line
+  /**
+   * A property name to inject the error message in the named field.
+   * This is useful for input wrappers with builtin error label, commonly
+   * found in UI libraries.
+  **/
+  customErrorProp: string,
   className: string,
 }
 
 Form.defaultProps = {
   children: null,
+  customErrorProp: undefined,
   data: null,
   onChange: null,
   onSubmit: () => undefined,
   validation: {},
-  string: '',
 }
