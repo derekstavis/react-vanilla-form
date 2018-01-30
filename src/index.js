@@ -311,8 +311,10 @@ export default class Form extends Component {
   }
 
   render () {
+    const { className } = this.props
+
     return (
-      <form onSubmit={this.handleSubmit}>
+      <form onSubmit={this.handleSubmit} className={className}>
         {React.Children.map(
           this.props.children,
           partialRight(this.cloneTree, [this, []])
@@ -371,6 +373,7 @@ Form.propTypes = {
 
 Form.defaultProps = {
   children: null,
+  className: '',
   customErrorProp: undefined,
   data: null,
   onChange: null,
