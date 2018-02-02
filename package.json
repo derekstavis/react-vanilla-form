@@ -1,6 +1,6 @@
 {
   "name": "react-vanilla-form",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "An unobstrusive form serializer and validator that works by following standards.",
   "keywords": [
     "react",
