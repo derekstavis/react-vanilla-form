@@ -17,25 +17,25 @@ import {
   is,
   isNil,
   lensPath,
-  map,
-  mergeAll,
-  not,
   partial,
   partialRight,
   pathEq,
-  pipe,
   reduce,
   reject,
   set,
   view,
-  when,
 } from 'ramda'
 
 
-const mergeRecursive = pairs => pipe(
-  mergeAll,
-  map(when(is(Array), mergeRecursive))
-)(pairs)
+const getValue = event => {
+  if (event.target) {
+    return contains(event.target.value, ['on', 'off'])
+      ? event.target.checked
+      : event.target.value
+  }
+
+  return event
+}
 
 const defaultToEmptyString = defaultTo('')
 
@@ -83,9 +83,7 @@ export default class Form extends Component {
 
   handleChange (path, event) {
     const lens = lensPath(path)
-    const value = contains(event.target.value, ['on', 'off'])
-      ? event.target.checked
-      : event.target.value
+    const value = getValue(event)
 
     const data = set(lens, value, this.state.data)
     const validate = view(lens, this.props.validation)

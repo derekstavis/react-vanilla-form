@@ -107,7 +107,7 @@ standard input interface:
 const Input = ({ name, type, onChange, title }) => (
   <div>
     <label htmlFor={name}>{title}</label>
-    <input {...{ name, type, onChange }} />
+    <input {...{ name, type, value, onChange: e => onChange(e.target.value) }} />
   </div>
 )
 
