@@ -225,8 +225,9 @@ export default class Form extends Component {
       return errors
     }
 
-    if (is(Array, element.props.children)) {
-      const { children } = element.props
+    const children = React.Children.toArray(element.props.children)
+
+    if (children.length) {
       const path = element.props.name
         ? [...parentPath, element.props.name]
         : parentPath
