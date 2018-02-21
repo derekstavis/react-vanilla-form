@@ -305,7 +305,7 @@ export default class Form extends Component {
 
     this.setState({ errors })
 
-    this.props.onSubmit(this.state.data)
+    this.props.onSubmit(this.state.data, this.state.errors)
   }
 
   render () {
