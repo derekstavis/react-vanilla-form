@@ -216,7 +216,7 @@ export default class Form extends Component {
     return element
   }
 
-  validateTree (errors, element, parentPath = []) {
+  validateTree (errors = {}, element, parentPath = []) {
     if (typeof element === 'string') {
       return errors
     }
@@ -234,7 +234,7 @@ export default class Form extends Component {
 
       const validated = reduce(
         partialRight(this.validateTree, [path]),
-        {},
+        errors,
         children
       )
 
