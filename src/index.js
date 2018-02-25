@@ -120,7 +120,7 @@ export default class Form extends Component {
   }
 
   cloneTree (element, index, parentElement, parentPath = []) {
-    if (typeof element === 'string') {
+    if (!element || typeof element === 'string') {
       return element
     }
 
@@ -217,7 +217,7 @@ export default class Form extends Component {
   }
 
   validateTree (errors = {}, element, parentPath = []) {
-    if (typeof element === 'string') {
+    if (!element || typeof element === 'string') {
       return errors
     }
 
