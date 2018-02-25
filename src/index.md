@@ -24,7 +24,7 @@ class FormState extends React.Component {
   render () {
     return (
       <React.Fragment>
-        <Form onSubmit={result => this.setState({ result })}>
+        <Form onSubmit={data => this.setState({ data })}>
           {this.props.children}
         </Form>
 
@@ -241,7 +241,7 @@ const FormState = require('./FormState.js');
 const Input = require('./CustomInput.js');
 
 <FormState
-  onChange={data => console.log(data)}
+  onChange={(data, setState) => setState({ data })}
   data={{
     name: 'Obi Wan Kenobi',
     address: {
@@ -317,3 +317,27 @@ function required (value) {
 
 Now the custom input will receive the validation error as a prop.
 
+### Setting errors manually
+
+It is possible to overwrite form errors using `errors` prop. This is useful
+for displaying server errors directly in fields.
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+<FormState
+  validation={{ name: required }}
+  customErrorProp="errorMessage"
+  data={{ email: 'foobar.com' }}
+  errors={{ email: 'Invalid e-mail address' }}
+>
+  <Input name="email" title="E-mail" />
+  <Input name="password" title="Password" />
+  <button>Submit!</button>
+</FormState>
+```

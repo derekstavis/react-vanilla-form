@@ -23,6 +23,7 @@ import {
   reduce,
   reject,
   set,
+  merge,
   view,
 } from 'ramda'
 
@@ -44,7 +45,7 @@ export default class Form extends Component {
     super(props)
 
     this.state = {
-      errors: {},
+      errors: props.errors || {},
       data: props.data || {},
     }
 
@@ -56,7 +57,7 @@ export default class Form extends Component {
   }
 
   componentWillMount () {
-    if (this.props.data) {
+    if (!this.props.errors && this.props.data) {
       this.setState({
         errors: this.validateTree({}, this),
       })
@@ -64,11 +65,15 @@ export default class Form extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const { data } = nextProps
+    const { data, errors } = nextProps
 
     if (data && !equals(data, this.props.data)) {
       const errors = this.validateTree(this.state.errors, this)
       this.setState({ data, errors })
+    }
+
+    if (errors && !equals(errors, this.props.errors)) {
+      this.setState({ errors })
     }
   }
 

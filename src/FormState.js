@@ -13,6 +13,7 @@ class FormState extends React.Component {
         <Form
           customErrorProp={this.props.customErrorProp}
           data={this.props.data}
+          errors={this.props.errors}
           validation={this.props.validation}
           onSubmit={result => this.setState({ result })}
           onChange={
@@ -37,6 +38,7 @@ class FormState extends React.Component {
 FormState.defaultProps = {
   customErrorProp: undefined,
   data: undefined,
+  errors: undefined,
   validation: undefined,
   onSubmit: undefined,
   onChange: undefined,
