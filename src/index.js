@@ -56,20 +56,17 @@ export default class Form extends Component {
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
-  componentWillMount () {
-    if (!this.props.errors && this.props.data) {
-      this.setState({
-        errors: this.validateTree({}, this),
-      })
-    }
-  }
-
   componentWillReceiveProps (nextProps) {
     const { data, errors } = nextProps
 
     if (data && !equals(data, this.props.data)) {
-      const errors = this.validateTree(this.state.errors, this)
-      this.setState({ data, errors })
+      this.setState(
+        { data },
+        () => {
+          const errors = this.validateTree({}, this)
+          this.setState({ errors })
+        }
+      )
     }
 
     if (errors && !equals(errors, this.props.errors)) {
@@ -308,10 +305,11 @@ export default class Form extends Component {
       this.state.errors,
       this
     )
-
-    this.setState({ errors })
-
-    this.props.onSubmit(this.state.data, this.state.errors)
+ 
+    this.setState(
+      { errors },
+      () => this.props.onSubmit(this.state.data, this.state.errors)
+    )
   }
 
   render () {
