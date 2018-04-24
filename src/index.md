@@ -278,6 +278,23 @@ const Input = require('./CustomInput.js');
  </FormState>
 ```
 
+## Continue using `onChange`
+
+You can continue using `onChange` for receiving change events on specific
+inputs. This may be necessary if you want to check when the user has
+changed a single input value without needing to subscribe to form's
+`onChange` (and thus having to keep comparing previous/next values):
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+<FormState>
+  <Input name="name" title="Full name" onChange={console.log} />
+  <button>Submit!</button>
+</FormState>
+```
+
 ### Custom error properties
 
 It is possible to receive the error message into the validated field via

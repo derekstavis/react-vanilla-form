@@ -83,12 +83,16 @@ export default class Form extends Component {
     }
   }
 
-  handleChange (path, event) {
+  handleChange (path, originalOnChange, event) {
     const lens = lensPath(path)
     const value = getValue(event)
 
     const data = set(lens, value, this.state.data)
     const validate = view(lens, this.props.validation)
+
+    if (typeof originalOnChange === 'function') {
+      originalOnChange(event)
+    }
 
     if (typeof validate === 'function') {
       const error = validate(defaultToEmptyString(view(lens, data)))
@@ -148,6 +152,7 @@ export default class Form extends Component {
     const path = [...parentPath, ...name]
 
     if (element.props.name) {
+      const originalOnChange = element.props.onChange
       const { customErrorProp } = this.props
       const lens = lensPath(path)
       const value = view(lens, this.state.data)
@@ -155,7 +160,7 @@ export default class Form extends Component {
         ? { [customErrorProp]: view(lens, this.state.errors) }
         : {}
       const onChange = element.type !== 'fieldset'
-        ? { onChange: partial(this.handleChange, [path]) }
+        ? { onChange: partial(this.handleChange, [path, originalOnChange]) }
         : {}
 
       if (parentElement) {
