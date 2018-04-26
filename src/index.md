@@ -295,7 +295,7 @@ const Input = require('./CustomInput.js');
 </FormState>
 ```
 
-### Custom error properties
+## Custom error properties
 
 It is possible to receive the error message into the validated field via
 props by configuring the error prop name with `customErrorProp` prop.
@@ -334,7 +334,7 @@ function required (value) {
 
 Now the custom input will receive the validation error as a prop.
 
-### Setting errors manually
+## Setting errors manually
 
 It is possible to overwrite form errors using `errors` prop. This is useful
 for displaying server errors directly in fields.
