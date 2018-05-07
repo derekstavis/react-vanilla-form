@@ -7,6 +7,8 @@ import {
 } from 'prop-types'
 
 import {
+  anyPass,
+  assocPath,
   ap,
   assoc,
   complement,
@@ -15,6 +17,7 @@ import {
   equals,
   filter,
   is,
+  isEmpty,
   isNil,
   lensPath,
   partial,
@@ -27,6 +30,7 @@ import {
   view,
 } from 'ramda'
 
+const isErrorEmpty = anyPass([isNil, isEmpty, complement(Boolean)])
 
 const getValue = event => {
   if (event.target) {
@@ -239,21 +243,11 @@ export default class Form extends Component {
         ? [...parentPath, element.props.name]
         : parentPath
 
-      const validated = reduce(
+      return reduce(
         partialRight(this.validateTree, [path]),
         errors,
         children
       )
-
-      if (path.length > 0) {
-        return assoc(
-          element.props.name,
-          validated,
-          errors
-        )
-      }
-
-      return validated
     }
 
     if (element.props.name) {
@@ -276,11 +270,9 @@ export default class Form extends Component {
         if (validationErrors.length > 0) {
           const error = validationErrors[0]
 
-          return assoc(
-            element.props.name,
-            error,
-            errors
-          )
+          if (!isErrorEmpty(error)) {
+            return assocPath(path, error, errors)
+          }
         }
 
         return errors
@@ -288,12 +280,12 @@ export default class Form extends Component {
 
       const validationError = validation(value)
 
-      if (!validationError) {
+      if (isErrorEmpty(validationError)) {
         return errors
       }
 
-      return assoc(
-        element.props.name,
+      return assocPath(
+        path,
         validationError,
         errors
       )
@@ -306,14 +298,13 @@ export default class Form extends Component {
     event.preventDefault()
     event.stopPropagation()
 
-    const errors = this.validateTree(
-      this.state.errors,
-      this
-    )
- 
+    const errors = this.validateTree({}, this)
+
     this.setState(
       { errors },
-      () => this.props.onSubmit(this.state.data, this.state.errors)
+      () => isErrorEmpty(this.state.errors)
+        ? this.props.onSubmit(this.state.data)
+        : this.props.onSubmit(this.state.data, this.state.errors)
     )
   }
 
