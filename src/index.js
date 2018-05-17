@@ -20,6 +20,7 @@ import {
   isEmpty,
   isNil,
   lensPath,
+  mergeDeepRight,
   partial,
   partialRight,
   pathEq,
@@ -64,17 +65,15 @@ export default class Form extends Component {
     const { data, errors } = nextProps
 
     if (data && !equals(data, this.props.data)) {
-      this.setState(
-        { data },
-        () => {
-          const errors = this.validateTree({}, this)
-          this.setState({ errors })
-        }
-      )
+      this.setState({ data })
     }
 
     if (errors && !equals(errors, this.props.errors)) {
-      this.setState({ errors })
+      const validatedErrors = this.validateTree({}, this)
+
+      this.setState({
+        errors: mergeDeepRight(validatedErrors, errors)
+      })
     }
   }
 
