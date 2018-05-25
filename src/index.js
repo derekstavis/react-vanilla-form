@@ -162,7 +162,7 @@ export default class Form extends Component {
       const value = view(lens, this.state.data)
       const error = customErrorProp
         ? { [customErrorProp]: view(lens, this.state.errors) }
-        : {}
+        : { error: view(lens, this.state.errors) }
       const onChange = element.type !== 'fieldset'
         ? { onChange: partial(this.handleChange, [path, originalOnChange]) }
         : {}
