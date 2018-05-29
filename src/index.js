@@ -200,6 +200,14 @@ export default class Form extends Component {
         })
       }
 
+      if (element.props.type === 'radio') {
+        return React.cloneElement(element, {
+          ...error,
+          value: element.props.value,
+          ...onChange,
+        })
+      }
+
       if (is(Boolean, value)) {
         return React.cloneElement(element, {
           ...error,
