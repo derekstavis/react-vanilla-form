@@ -147,6 +147,10 @@ otherwhise return `false` (or a falsy value).
 
 To capture error messages for an `input`, use a sibling `label` component
 pointing to the `label` using `htmlFor` and define the `role` as `alert`.
+When using a custom input, error messages will be passed through via
+`error` prop. For customizing error properties, see more on next
+sections.
+
 
 ```jsx
 const FormState = require('./FormState.js');
@@ -180,6 +184,86 @@ function isNumber (value) {
   </fieldset>
   <button>Submit!</button>
 </FormState>
+```
+
+### Custom error properties
+
+It is possible to receive the error message into the validated field via
+props by configuring the error prop name with `customErrorProp` prop.
+
+Let's say we want to improve the custom input component to include an
+`errorMessage` prop:
+
+```jsx static
+const Input = ({ name, type, onChange, title, value, errorMessage }) => (
+  <div>
+    <label htmlFor={name}>{title}</label>
+    <input {...{ name, type, onChange, value }} />
+    <label>{errorMessage}</label>
+  </div>
+)
+```
+
+Configure `customErrorProp="errorMessage"` on the form with the prop name:
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+<FormState
+  validation={{ name: required }}
+  customErrorProp="errorMessage"
+>
+  <Input name="name" title="Full name" />
+  <button>Submit!</button>
+</FormState>
+```
+
+Now the custom input will receive the validation error as a prop.
+
+### Run validations on different events
+
+By default, validations will run on `change` event, meaning that the
+feedback will be realtime, which sometimes is the desired behaviour,
+but sometimes might confuse users. For this cases, it's possible to
+change the event which will triggered via `validateOn` prop. The
+supported events are `change`, `focus`, `blur` and `submit`. Using
+`submit` will effectively disable realtime validation.
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+function isNumber (value) {
+  return parseInt(value) ? false : 'Should be a number'
+}
+
+<FormState
+  customErrorProp="errorMessage"
+  validateOn="blur"
+  validation={{
+    name: required,
+    address: {
+      street: required,
+      number: [required, isNumber],
+    }
+  }}
+>
+  <Input name="name" title="Full name" />
+  <fieldset name="address">
+    <Input name="street" title="Street" />
+    <Input type="text" name="number" title="House Number" />
+  </fieldset>
+  <button>Submit!</button>
+ </FormState>
 ```
 
 ## Setting form data
@@ -228,6 +312,76 @@ function isNumber (value) {
  </FormState>
 ```
 
+## Validating `data` prop
+
+When setting form data via `data` prop, by default the data will not be
+validated. Sometimes there are situations where you may want to validateand and display errors, e.g.: server-side rendering. To validate the
+data set through `data` prop, set `validateDataProp` to true:
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+function isNumber (value) {
+  return parseInt(value) ? false : 'Should be a number'
+}
+
+<FormState
+  data={{
+    name: 'Obi Wan Kenobi',
+    address: {
+      street: 'A galaxy far far away',
+      number: 'Nevermind',
+    }
+  }}
+  validation={{
+    name: required,
+    address: {
+      street: required,
+      number: [required, isNumber],
+    }
+  }}
+  customErrorProp="errorMessage"
+  validateDataProp
+>
+  <Input name="name" title="Full name" />
+  <fieldset name="address">
+    <Input name="street" title="Street" />
+    <Input name="number" title="House Number" />
+  </fieldset>
+  <button>Submit!</button>
+ </FormState>
+```
+
+## Setting errors manually
+
+It is possible to overwrite form errors using `errors` prop. This is
+useful for displaying server errors directly in fields.
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+<FormState
+  validation={{ name: required }}
+  customErrorProp="errorMessage"
+  data={{ email: 'foobar.com' }}
+  errors={{ email: 'Invalid e-mail address' }}
+>
+  <Input name="email" title="E-mail" />
+  <Input name="password" title="Password" />
+  <button>Submit!</button>
+</FormState>
+```
+
 ## Getting form data realtime
 
 It's possible to get the form data updates realtime using `onChange` prop.
@@ -240,16 +394,33 @@ on form state.
 const FormState = require('./FormState.js');
 const Input = require('./CustomInput.js');
 
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+function isNumber (value) {
+  return parseInt(value) ? false : 'Should be a number'
+}
+
 <FormState
   onChange={(data, setState) => setState({ data })}
+  validateDataProp
+  customErrorProp="errorMessage"
   data={{
     name: 'Obi Wan Kenobi',
     address: {
       street: 'A galaxy far far away',
-      number: 123,
+      number: "xxx",
       state: "ny",
     },
     accepted: false,
+  }}
+  validation={{
+    name: required,
+    address: {
+      street: required,
+      number: [required, isNumber],
+    }
   }}
 >
   <Input name="name" title="Full name" />
@@ -260,7 +431,7 @@ const Input = require('./CustomInput.js');
   <input type="radio" name="civil_state" value="single" /> Single
   <fieldset name="address">
     <Input name="street" title="Street" />
-    <Input type="number" name="number" title="House Number" />
+    <Input name="number" title="House Number" />
     <label htmlFor="state">
       State
     </label>
@@ -291,70 +462,6 @@ const Input = require('./CustomInput.js');
 
 <FormState>
   <Input name="name" title="Full name" onChange={console.log} />
-  <button>Submit!</button>
-</FormState>
-```
-
-## Custom error properties
-
-It is possible to receive the error message into the validated field via
-props by configuring the error prop name with `customErrorProp` prop.
-
-Let's say we want to improve the custom input component to include an
-`errorMessage` prop:
-
-```jsx static
-const Input = ({ name, type, onChange, title, value, errorMessage }) => (
-  <div>
-    <label htmlFor={name}>{title}</label>
-    <input {...{ name, type, onChange, value }} />
-    <label>{errorMessage}</label>
-  </div>
-)
-```
-
-Configure `customErrorProp="errorMessage"` on the form with the prop name:
-
-```jsx
-const FormState = require('./FormState.js');
-const Input = require('./CustomInput.js');
-
-function required (value) {
-  return value ? false : 'This field is required!'
-}
-
-<FormState
-  validation={{ name: required }}
-  customErrorProp="errorMessage"
->
-  <Input name="name" title="Full name" />
-  <button>Submit!</button>
-</FormState>
-```
-
-Now the custom input will receive the validation error as a prop.
-
-## Setting errors manually
-
-It is possible to overwrite form errors using `errors` prop. This is useful
-for displaying server errors directly in fields.
-
-```jsx
-const FormState = require('./FormState.js');
-const Input = require('./CustomInput.js');
-
-function required (value) {
-  return value ? false : 'This field is required!'
-}
-
-<FormState
-  validation={{ name: required }}
-  customErrorProp="errorMessage"
-  data={{ email: 'foobar.com' }}
-  errors={{ email: 'Invalid e-mail address' }}
->
-  <Input name="email" title="E-mail" />
-  <Input name="password" title="Password" />
   <button>Submit!</button>
 </FormState>
 ```

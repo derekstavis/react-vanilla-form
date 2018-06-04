@@ -1,10 +1,28 @@
 import React from 'react'
 
-const Input = ({ name, type, onChange, title, value, errorMessage }) => (
+const Input = ({
+  errorMessage,
+  name,
+  onBlur,
+  onChange,
+  onFocus,
+  title,
+  type,
+  value,
+}) => (
   <div>
     <label htmlFor={name}>{title}</label>
-    <input {...{ name, type, value, onChange: e => onChange(e.target.value) }} />
-    <label>{errorMessage}</label>
+    <input
+      {...{
+        name,
+        onBlur,
+        onChange: e => onChange(e.target.value),
+        onFocus,
+        type,
+        value,
+      }}
+    />
+    <small style={{ color: 'red' }}>{errorMessage}</small>
   </div>
 )
 

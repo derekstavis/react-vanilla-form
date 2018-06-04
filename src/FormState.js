@@ -14,20 +14,23 @@ class FormState extends React.Component {
           customErrorProp={this.props.customErrorProp}
           data={this.props.data}
           errors={this.props.errors}
+          validateDataProp={this.props.validateDataProp}
+          validateOn={this.props.validateOn}
           validation={this.props.validation}
-          onSubmit={(result, errors) => this.setState({ result, errors })}
-          onChange={
-            this.props.onChange
-              ? result => this.setState({ result })
-              : undefined
+          onSubmit={(data, errors) =>
+            this.setState({ data, errors })
           }
+          onChange={(data, errors) => {
+            if (!this.props.onChange) return
+            this.setState({ data, errors })
+          }}
         >
           {this.props.children}
         </Form>
-        {this.state.result &&
+        {this.state.data &&
           <pre><code>
-            Result:<br />
-            {JSON.stringify(this.state.result, null, 2)}
+            result:<br />
+            {JSON.stringify(this.state.data, null, 2)}
           </code></pre>
         }
         {this.state.errors &&
@@ -45,6 +48,8 @@ FormState.defaultProps = {
   customErrorProp: undefined,
   data: undefined,
   errors: undefined,
+  validateDataProp: undefined,
+  validateOn: undefined,
   validation: undefined,
   onSubmit: undefined,
   onChange: undefined,
