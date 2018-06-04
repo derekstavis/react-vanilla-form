@@ -8,9 +8,7 @@ import {
 
 import {
   anyPass,
-  assocPath,
   ap,
-  assoc,
   complement,
   contains,
   defaultTo,
@@ -103,9 +101,9 @@ export default class Form extends Component {
       this.setState({ data, errors }, this.notifyChangeEvent)
     }
 
-    if (validate && validate.constructor === Array) {
+    if (is(Array, validate)) {
       const validationErrors = reject(
-        complement(Boolean),
+        isErrorEmpty,
         ap(validate, [value])
       )
 
@@ -261,7 +259,7 @@ export default class Form extends Component {
 
       if (is(Array, validation)) {
         const validationErrors = reject(
-          complement(Boolean),
+          isErrorEmpty,
           ap(validation, [value])
         )
 
@@ -269,7 +267,9 @@ export default class Form extends Component {
           const error = validationErrors[0]
 
           if (!isErrorEmpty(error)) {
-            return assocPath(path, error, errors)
+            return set(lens, error, errors)
+          } else {
+            return dissocPath(path, errors)
           }
         }
 
@@ -282,8 +282,8 @@ export default class Form extends Component {
         return errors
       }
 
-      return assocPath(
-        path,
+      return set(
+        lens,
         validationError,
         errors
       )
