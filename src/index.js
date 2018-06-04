@@ -12,6 +12,8 @@ import {
   complement,
   contains,
   defaultTo,
+  dissocPath,
+  dropLast,
   equals,
   filter,
   is,
@@ -21,6 +23,7 @@ import {
   partial,
   partialRight,
   pathEq,
+  pathSatisfies,
   reduce,
   reject,
   set,
@@ -61,15 +64,15 @@ export default class Form extends Component {
   componentWillReceiveProps (nextProps) {
     const { data, errors } = nextProps
 
-    if (data && !equals(data, this.state.data)) {
-      this.setState({ data, errors }, () => {
+    if (data && !equals(data, this.props.data)) {
+      this.setState({ data }, () => {
         const errors = this.validateTree({}, this)
         this.setState({ errors: merge(this.state.errors, errors)})
       })
       return
     }
 
-    if (errors && !equals(errors, this.state.errors)) {
+    if (errors && !equals(errors, this.props.errors)) {
       this.setState({ errors: merge(this.state.errors, errors) })
     }
   }
@@ -94,11 +97,10 @@ export default class Form extends Component {
       originalOnChange(event)
     }
 
-    if (typeof validate === 'function') {
-      const error = validate(defaultToEmptyString(view(lens, data)))
-      const errors = set(lens, error, this.state.errors)
+    let nextError
 
-      this.setState({ data, errors }, this.notifyChangeEvent)
+    if (typeof validate === 'function') {
+      nextError = validate(defaultToEmptyString(view(lens, data)))
     }
 
     if (is(Array, validate)) {
@@ -108,20 +110,25 @@ export default class Form extends Component {
       )
 
       if (validationErrors.length > 0) {
-        const error = validationErrors[0]
-        const errors = set(lens, error, this.state.errors)
-
-        this.setState({ data, errors }, this.notifyChangeEvent)
-        return
+        nextError = validationErrors[0]
       }
-
-      const errors = set(lens, null, this.state.errors)
-
-      this.setState({ data, errors }, this.notifyChangeEvent)
-      return
     }
 
-    this.setState({ data }, this.notifyChangeEvent)
+    let errors = this.state.errors
+
+    if (!nextError) {
+      errors = dissocPath(path, errors)
+
+      const parentPath = dropLast(1, path)
+
+      if (pathSatisfies(isErrorEmpty, parentPath, errors)) {
+        errors = dissocPath(parentPath, errors)
+      }
+    } else {
+      errors = set(lens, nextError, errors)
+    }
+
+    this.setState({ data, errors }, this.notifyChangeEvent)
     return
   }
 
@@ -239,11 +246,18 @@ export default class Form extends Component {
         ? [...parentPath, element.props.name]
         : parentPath
 
-      return reduce(
+      const childErrors = reduce(
         partialRight(this.validateTree, [path]),
         errors,
         children
       )
+
+      if (isErrorEmpty(childErrors)) {
+        const parentPath = dropLast(1, path)
+        return dissocPath(parentPath, errors)
+      }
+
+      return childErrors
     }
 
     if (element.props.name) {
