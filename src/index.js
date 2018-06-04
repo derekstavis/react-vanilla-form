@@ -63,18 +63,16 @@ export default class Form extends Component {
   componentWillReceiveProps (nextProps) {
     const { data, errors } = nextProps
 
-    if (data && !equals(data, this.props.data)) {
-      this.setState(
-        { data },
-        () => {
-          const errors = this.validateTree({}, this)
-          this.setState({ errors })
-        }
-      )
+    if (data && !equals(data, this.state.data)) {
+      this.setState({ data, errors }, () => {
+        const errors = this.validateTree({}, this)
+        this.setState({ errors: merge(this.state.errors, errors)})
+      })
+      return
     }
 
-    if (errors && !equals(errors, this.props.errors)) {
-      this.setState({ errors })
+    if (errors && !equals(errors, this.state.errors)) {
+      this.setState({ errors: merge(this.state.errors, errors) })
     }
   }
 
