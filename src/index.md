@@ -225,6 +225,47 @@ function required (value) {
 
 Now the custom input will receive the validation error as a prop.
 
+### Run validations on different events
+
+By default, validations will run on `change` event, meaning that the
+feedback will be realtime, which sometimes is the desired behaviour,
+but sometimes might confuse users. For this cases, it's possible to
+change the event which will triggered via `validateOn` prop. The
+supported events are `change`, `focus`, `blur` and `submit`. Using
+`submit` will effectively disable realtime validation.
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+function isNumber (value) {
+  return parseInt(value) ? false : 'Should be a number'
+}
+
+<FormState
+  customErrorProp="errorMessage"
+  validateOn="blur"
+  validation={{
+    name: required,
+    address: {
+      street: required,
+      number: [required, isNumber],
+    }
+  }}
+>
+  <Input name="name" title="Full name" />
+  <fieldset name="address">
+    <Input name="street" title="Street" />
+    <Input type="text" name="number" title="House Number" />
+  </fieldset>
+  <button>Submit!</button>
+ </FormState>
+```
+
 ## Setting form data
 
 It's possible to set the form data by passing an object whose keys mirror
@@ -271,10 +312,55 @@ function isNumber (value) {
  </FormState>
 ```
 
+## Validating `data` prop
+
+When setting form data via `data` prop, by default the data will not be
+validated. Sometimes there are situations where you may want to validateand and display errors, e.g.: server-side rendering. To validate the
+data set through `data` prop, set `validateDataProp` to true:
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+function isNumber (value) {
+  return parseInt(value) ? false : 'Should be a number'
+}
+
+<FormState
+  data={{
+    name: 'Obi Wan Kenobi',
+    address: {
+      street: 'A galaxy far far away',
+      number: 'Nevermind',
+    }
+  }}
+  validation={{
+    name: required,
+    address: {
+      street: required,
+      number: [required, isNumber],
+    }
+  }}
+  customErrorProp="errorMessage"
+  validateDataProp
+>
+  <Input name="name" title="Full name" />
+  <fieldset name="address">
+    <Input name="street" title="Street" />
+    <Input name="number" title="House Number" />
+  </fieldset>
+  <button>Submit!</button>
+ </FormState>
+```
+
 ## Setting errors manually
 
-It is possible to overwrite form errors using `errors` prop. This is useful
-for displaying server errors directly in fields.
+It is possible to overwrite form errors using `errors` prop. This is
+useful for displaying server errors directly in fields.
 
 ```jsx
 const FormState = require('./FormState.js');
@@ -318,6 +404,7 @@ function isNumber (value) {
 
 <FormState
   onChange={(data, setState) => setState({ data })}
+  validateDataProp
   customErrorProp="errorMessage"
   data={{
     name: 'Obi Wan Kenobi',
