@@ -21,7 +21,7 @@
     "styleguide": "styleguidist server",
     "styleguide:build": "styleguidist build",
     "styleguide:deploy": "gh-pages -d styleguide",
-    "build": "babel src/index.js --out-file dist/index.js",
+    "build": "mkdir -p dist; babel src/index.js --out-file dist/index.js",
     "test": "jest --coverage --coverageReporters=json"
   },
   "peerDependencies": {
