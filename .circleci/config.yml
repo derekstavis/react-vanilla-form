@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: node:9
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: 'yarn'
+      - run:
+          name: Build the package
+          command: 'yarn build'
+      - run:
+          name: Run tests
+          command: 'yarn test'
