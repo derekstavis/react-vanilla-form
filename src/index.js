@@ -149,7 +149,7 @@ export default class Form extends Component {
       originalHandler(event)
     }
 
-    if (event.defaultPrevented) {
+    if (event && event.defaultPrevented) {
       return
     }
 
