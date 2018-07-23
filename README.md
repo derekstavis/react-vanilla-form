@@ -1,7 +1,7 @@
 <img width="196px" align="left" hspace="20px" src="https://upload.wikimedia.org/wikipedia/commons/6/69/IceCreamSandwich.jpg" />
 
 # React Vanilla Form
-> An unobstrusive form serializer and validator that works by following standards.
+> An unobtrusive form serializer and validator that works by following standards.
 
 <br />
 

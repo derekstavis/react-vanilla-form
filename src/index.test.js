@@ -48,7 +48,7 @@ const renderBaseInputs = () => (
     <label htmlFor="age">Age</label>
     <input name="age" type="number" />
     <fieldset name="address">
-      <legend>Addess</legend>
+      <legend>Address</legend>
       <div>
         <label htmlFor="street">Street</label>
         <input name="street" />
