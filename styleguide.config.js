@@ -1,5 +1,3 @@
-const path = require('path')
-
 module.exports = {
   title: 'React Vanilla Form',
   showSidebar: false,

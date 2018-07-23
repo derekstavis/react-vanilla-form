@@ -5,8 +5,6 @@ import Adapter from 'enzyme-adapter-react-16'
 import {
   assocPath,
   dissocPath,
-  map,
-  toPairs,
 } from 'ramda'
 
 import Form from '.'
@@ -14,8 +12,8 @@ import Form from '.'
 configure({ adapter: new Adapter() })
 
 const required = value => !value && 'required'
-const isNumber = value => !parseInt(value) && 'isNumber'
-const isTrue = value => !Boolean(value) && 'isTrue'
+const isNumber = value => !parseInt(value, 10) && 'isNumber'
+const isTrue = value => !value && 'isTrue'
 
 const trigger = (wrapper, event, query, value) => {
   const mockEvent = value !== undefined

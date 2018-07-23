@@ -1,34 +1,30 @@
 import React, { Component } from 'react'
+
 import {
+  func,
   node,
   object,
   oneOf,
-  func,
   string,
 } from 'prop-types'
 
 import {
   anyPass,
-  ap,
   complement,
   contains,
-  defaultTo,
   dissocPath,
   dropLast,
   equals,
-  filter,
   is,
   isEmpty,
   isNil,
   lensPath,
+  merge,
   partial,
   partialRight,
-  pathEq,
   pathSatisfies,
   reduce,
-  reject,
   set,
-  merge,
   view,
 } from 'ramda'
 
@@ -52,8 +48,6 @@ const isCheckable = element =>
   element.props.type === 'checkbox' ||
   typeof element.props.checked !== 'undefined' ||
   typeof (element.type.defaultProps || {}).checked !== 'undefined'
-
-const defaultToEmptyString = defaultTo('')
 
 export default class Form extends Component {
   constructor (props) {
@@ -134,8 +128,6 @@ export default class Form extends Component {
     const parentPath = dropLast(1, path)
 
     if (parentPath.length > 0) {
-      const parentErrors = view(lensPath(parentPath), errors)
-
       if (pathSatisfies(isErrorEmpty, parentPath, errors)) {
         return dissocPath(parentPath, errors)
       }
