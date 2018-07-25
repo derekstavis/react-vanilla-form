@@ -24,7 +24,7 @@ class FormState extends React.Component {
   render () {
     return (
       <React.Fragment>
-        <Form onSubmit={data => this.setState({ data })}>
+        <Form {...this.props} onSubmit={data => this.setState({ data })}>
           {this.props.children}
         </Form>
 
@@ -132,6 +132,57 @@ const Input = require('./CustomInput.js');
   </fieldset>
   <button>Submit!</button>
 </FormState>
+```
+
+To use input fields declared inside custom containers, set the
+`deepSearch` prop:
+
+```jsx
+const FormState = require('./FormState.js');
+const CustomContainer = require('./CustomContainer.js');
+
+<FormState deepSearch>
+  <CustomContainer />
+  <button>Submit!</button>
+</FormState>
+```
+
+**Caution:** the `deepSearch` prop will make react-vanilla-form "manually" render components in search of inputs. This will cause the final JSX structure inside the form to be different from what you would expect, and this may cause unwanted behavior (like breaking test case). Use at your own discretion.
+
+Final JSX structure without `deepSearch`:
+
+```html static
+<Form>
+  <form>
+    <CustomContainer>
+      <div>
+        <label for="name">Name</label>
+        <input name="name" type="text">
+        <br>
+        <label for="age">Age</label>
+        <input name="age" type="number">
+      </div>
+    </CustomContainer>
+    <button>Submit!</button>
+  </form>
+</Form>
+```
+
+Final JSX structure with `deepSearch`:
+
+```html static
+<Form>
+  <form>
+    <div>
+      <label for="name">Name</label>
+      <input name="name" type="text">
+      <br>
+      <label for="age">Age</label>
+      <input name="age" type="number">
+    </div>
+    <button>Submit!</button>
+  </form>
+</Form>
 ```
 
 ## Validating data

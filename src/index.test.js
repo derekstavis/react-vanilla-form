@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React, { Component, PureComponent, Fragment } from 'react'
 import { configure, mount } from 'enzyme'
 import Adapter from 'enzyme-adapter-react-16'
 
@@ -250,6 +250,135 @@ describe('Form Serialization', () => {
       name: baseData.name,
     })
   })
+
+  test('serializes input inside custom functional component', () => {
+    const onSubmit = jest.fn()
+
+    const CustomFunctionalComponent = () => (
+      <div>
+        <label htmlFor="name">Name</label>
+        <input type="text" name="name" />
+      </div>
+    )
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit} deepSearch>
+        <CustomFunctionalComponent />
+      </Form>
+    )
+
+    change(wrapper, { name: 'name' }, baseData.name)
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: baseData.name,
+    })
+  })
+
+  test('serializes input inside custom component', () => {
+    const onSubmit = jest.fn()
+
+    class CustomComponent extends Component {
+      render () {
+        return (
+          <div>
+            <label htmlFor="name">Name</label>
+            <input type="text" name="name" />
+          </div>
+        )
+      }
+    }
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit} deepSearch>
+        <CustomComponent />
+      </Form>
+    )
+
+    change(wrapper, { name: 'name' }, baseData.name)
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: baseData.name,
+    })
+  })
+
+  test('serializes input inside custom pure component', () => {
+    const onSubmit = jest.fn()
+
+    class CustomPureComponent extends PureComponent {
+      render () {
+        return (
+          <div>
+            <label htmlFor="name">Name</label>
+            <input type="text" name="name" />
+          </div>
+        )
+      }
+    }
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit} deepSearch>
+        <CustomPureComponent />
+      </Form>
+    )
+
+    change(wrapper, { name: 'name' }, baseData.name)
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: baseData.name,
+    })
+  })
+
+  test('serializes input inside nested custom containers', () => {
+    const onSubmit = jest.fn()
+
+    class ThirdConteiner extends PureComponent {
+      render () {
+        return (
+          <div>
+            <label htmlFor="name">Name</label>
+            <input type="text" name="name" />
+         </div>
+        )
+      }
+    }
+
+    const SecondConteiner = () => (
+      <div>
+        <ThirdConteiner />
+      </div>
+    )
+
+    class FirstConteiner extends Component {
+      render () {
+        return (
+          <div>
+            <SecondConteiner />
+          </div>
+        )
+      }
+    }
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit} deepSearch>
+        <FirstConteiner />
+      </Form>
+    )
+
+    change(wrapper, { name: 'name' }, baseData.name)
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: baseData.name,
+    })
+  })
+
   test('serializes deep inputs', () => {
     const onSubmit = jest.fn()
 
@@ -334,6 +463,209 @@ describe('Form Serialization', () => {
     expect(onSubmit).toHaveBeenCalledWith(baseData)
   })
 
+  test('serializes deep inputs inside custom functional component on change', () => {
+    const onSubmit = jest.fn()
+    const onChange = jest.fn()
+
+    const CustomContainer = () => (
+      <div>
+        { renderBaseInputs() }
+      </div>
+    )
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit} onChange={onChange} deepSearch>
+        <CustomContainer />
+      </Form>
+    )
+
+    let formData = {}
+
+    change(wrapper, { name: 'name' }, baseData.name)
+
+    formData.name = baseData.name
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'age' }, baseData.age)
+
+    formData.age = baseData.age
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    formData.address = {}
+
+    change(wrapper, { name: 'street' }, baseData.address.street)
+
+    formData.address.street = baseData.address.street
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'number' }, baseData.address.number)
+
+    formData.address.number = baseData.address.number
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'city' }, baseData.address.city)
+
+    formData.address.city = baseData.address.city
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'state' }, baseData.address.state)
+
+    formData.address.state = baseData.address.state
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'instructions' }, baseData.address.instructions)
+
+    formData.address.instructions = baseData.address.instructions
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'accepted_terms' }, baseData.accepted_terms)
+
+    formData.accepted_terms = baseData.accepted_terms
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith(baseData)
+  })
+
+  test('serializes deep inputs inside custom component on change', () => {
+    const onSubmit = jest.fn()
+    const onChange = jest.fn()
+
+    class CustomComponent extends Component {
+      render () {
+        return (
+          <div>
+            { renderBaseInputs() }
+          </div>
+        )
+      }
+    }
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit} onChange={onChange} deepSearch>
+        <CustomComponent />
+      </Form>
+    )
+
+    let formData = {}
+
+    change(wrapper, { name: 'name' }, baseData.name)
+
+    formData.name = baseData.name
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'age' }, baseData.age)
+
+    formData.age = baseData.age
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    formData.address = {}
+
+    change(wrapper, { name: 'street' }, baseData.address.street)
+
+    formData.address.street = baseData.address.street
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'number' }, baseData.address.number)
+
+    formData.address.number = baseData.address.number
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'city' }, baseData.address.city)
+
+    formData.address.city = baseData.address.city
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'state' }, baseData.address.state)
+
+    formData.address.state = baseData.address.state
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'instructions' }, baseData.address.instructions)
+
+    formData.address.instructions = baseData.address.instructions
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'accepted_terms' }, baseData.accepted_terms)
+
+    formData.accepted_terms = baseData.accepted_terms
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith(baseData)
+  })
+
+  test('serializes deep inputs inside custom pure component on change', () => {
+    const onSubmit = jest.fn()
+    const onChange = jest.fn()
+
+    class CustomPureComponent extends PureComponent {
+      render () {
+        return (
+          <div>
+            { renderBaseInputs() }
+          </div>
+        )
+      }
+    }
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit} onChange={onChange} deepSearch>
+        <CustomPureComponent />
+      </Form>
+    )
+
+    let formData = {}
+
+    change(wrapper, { name: 'name' }, baseData.name)
+
+    formData.name = baseData.name
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'age' }, baseData.age)
+
+    formData.age = baseData.age
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    formData.address = {}
+
+    change(wrapper, { name: 'street' }, baseData.address.street)
+
+    formData.address.street = baseData.address.street
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'number' }, baseData.address.number)
+
+    formData.address.number = baseData.address.number
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'city' }, baseData.address.city)
+
+    formData.address.city = baseData.address.city
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'state' }, baseData.address.state)
+
+    formData.address.state = baseData.address.state
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'instructions' }, baseData.address.instructions)
+
+    formData.address.instructions = baseData.address.instructions
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    change(wrapper, { name: 'accepted_terms' }, baseData.accepted_terms)
+
+    formData.accepted_terms = baseData.accepted_terms
+    expect(onChange).toHaveBeenCalledWith(formData, {})
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith(baseData)
+  })
+
   test('continues calling original change handler', () => {
     const onChange = jest.fn()
 
@@ -364,6 +696,66 @@ describe('Form Validation', () => {
     expect(onSubmit).toHaveBeenCalledWith({}, baseErrors)
   })
 
+  test('validates deeply all inputs inside custom functional component on submit', () => {
+    const onSubmit = jest.fn()
+
+    const CustomFunctionalComponent = () => (
+      <div>
+        { renderBaseInputs() }
+      </div>
+    )
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit} validation={baseValidation} deepSearch>
+        <CustomFunctionalComponent />
+      </Form>
+    )
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith({}, baseErrors)
+  })
+
+  test('validates deeply all inputs inside custom component on submit', () => {
+    const onSubmit = jest.fn()
+
+    class CustomComponent extends Component {
+      render () {
+        return renderBaseInputs()
+      }
+    }
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit} validation={baseValidation} deepSearch>
+        <CustomComponent />
+      </Form>
+    )
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith({}, baseErrors)
+  })
+
+  test('validates deeply all inputs inside custom pure component on submit', () => {
+    const onSubmit = jest.fn()
+
+    class CustomPureComponent extends PureComponent {
+      render () {
+        return renderBaseInputs()
+      }
+    }
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit} validation={baseValidation} deepSearch>
+        <CustomPureComponent />
+      </Form>
+    )
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith({}, baseErrors)
+  })
+
   test('validates only the changed input on change', () => {
     const onChange = jest.fn()
 
@@ -378,6 +770,75 @@ describe('Form Validation', () => {
     expect(onChange).toHaveBeenCalledWith(
       { age: baseData.name },
       { age: 'isNumber' }
+    )
+  })
+
+  test('validates only the changed input inside custom functional component on change', () => {
+    const onChange = jest.fn()
+
+    const CustomFunctionalComponent = () => (
+      <div>
+        { renderBaseInputs() }
+      </div>
+    )
+
+    const wrapper = mount(
+      <Form onChange={onChange} validation={baseValidation} deepSearch>
+        <CustomFunctionalComponent />
+      </Form>
+    )
+
+    change(wrapper, { name: 'name' }, baseData.name)
+
+    expect(onChange).toHaveBeenCalledWith(
+      { name: baseData.name },
+      { }
+    )
+  })
+
+  test('validates only the changed input inside custom component on change', () => {
+    const onChange = jest.fn()
+
+    class CustomComponent extends Component {
+      render () {
+        return renderBaseInputs()
+      }
+    }
+
+    const wrapper = mount(
+      <Form onChange={onChange} validation={baseValidation} deepSearch>
+        <CustomComponent />
+      </Form>
+    )
+
+    change(wrapper, { name: 'name' }, baseData.name)
+
+    expect(onChange).toHaveBeenCalledWith(
+      { name: baseData.name },
+      { }
+    )
+  })
+
+  test('validates only the changed input inside custom pure component on change', () => {
+    const onChange = jest.fn()
+
+    class CustomPureComponent extends PureComponent {
+      render () {
+        return renderBaseInputs()
+      }
+    }
+
+    const wrapper = mount(
+      <Form onChange={onChange} validation={baseValidation} deepSearch>
+        <CustomPureComponent />
+      </Form>
+    )
+
+    change(wrapper, { name: 'name' }, baseData.name)
+
+    expect(onChange).toHaveBeenCalledWith(
+      { name: baseData.name },
+      { }
     )
   })
 
@@ -568,6 +1029,79 @@ describe('Data prop', () => {
     expect(onSubmit).toHaveBeenCalledWith(baseData)
   })
 
+  test('sets data deeply inside custom functional component', () => {
+    const onSubmit = jest.fn()
+
+    const CustomFunctionalComponent = () => (
+      <div>
+        { renderBaseInputs() }
+      </div>
+    )
+
+    const wrapper = mount(
+      <Form
+        data={baseData}
+        onSubmit={onSubmit}
+        validation={baseValidation}
+      >
+        <CustomFunctionalComponent />
+      </Form>
+    )
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith(baseData)
+  })
+
+  test('sets data deeply inside custom component', () => {
+    const onSubmit = jest.fn()
+
+    class CustomComponent extends Component {
+      render () {
+        return renderBaseInputs()
+      }
+    }
+
+    const wrapper = mount(
+      <Form
+        data={baseData}
+        onSubmit={onSubmit}
+        validation={baseValidation}
+      >
+        <CustomComponent />
+      </Form>
+    )
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith(baseData)
+  })
+
+  test('sets data deeply inside custom pure component', () => {
+    const onSubmit = jest.fn()
+
+
+    class CustomPureComponent extends PureComponent {
+      render () {
+        return renderBaseInputs()
+      }
+    }
+
+    const wrapper = mount(
+      <Form
+        data={baseData}
+        onSubmit={onSubmit}
+        validation={baseValidation}
+      >
+        <CustomPureComponent />
+      </Form>
+    )
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith(baseData)
+  })
+
   test('updates data deeply', () => {
     const wrapper = mount(
       <Form
@@ -705,5 +1239,116 @@ describe('Errors prop', () => {
     wrapper.update()
 
     assertPropsEquals('error', wrapper, merge(baseErrors, errors))
+  })
+})
+
+describe('Custom containers props', () => {
+  test('pass the props down correctly of a custom functional component', () => {
+    const CustomFunctionalComponent = ({label}) => (
+      <div>
+        <label htmlFor="name">{label}</label>
+        <input type="text" name="name" />
+      </div>
+    )
+
+    const testLabel = "Your name:"
+
+    const wrapper = mount(
+      <Form deepSearch>
+        <CustomFunctionalComponent label={testLabel} />
+      </Form>
+    )
+    const text = wrapper.find('[htmlFor="name"]').text()
+
+    expect(text).toBe(testLabel)
+  })
+
+  test('pass the props down correctly of a custom component', () => {
+    class CustomComponent extends Component {
+      render () {
+        return (
+          <div>
+            <label htmlFor="name">{this.props.label}</label>
+            <input type="text" name="name" />
+          </div>
+        )
+      }
+    }
+
+    const testLabel = "Your name:"
+
+    const wrapper = mount(
+      <Form deepSearch>
+        <CustomComponent label={testLabel} />
+      </Form>
+    )
+    const text = wrapper.find('[htmlFor="name"]').text()
+
+    expect(text).toBe(testLabel)
+  })
+
+  test('pass the props down correctly of a custom pure component', () => {
+    class CustomPureComponent extends PureComponent {
+      render () {
+        return (
+          <div>
+            <label htmlFor="name">{this.props.label}</label>
+            <input type="text" name="name" />
+          </div>
+        )
+      }
+    }
+
+    const testLabel = "Your name:"
+
+    const wrapper = mount(
+      <Form deepSearch>
+        <CustomPureComponent label={testLabel} />
+      </Form>
+    )
+    const text = wrapper.find('[htmlFor="name"]').text()
+
+    expect(text).toBe(testLabel)
+  })
+
+  test('pass the props down correctly to nested custom containers', () => {
+    class ThirdConteiner extends PureComponent {
+      render () {
+        return (
+          <div>
+            <label htmlFor="name">{this.props.label}</label>
+            <input type="text" name="name" />
+         </div>
+        )
+      }
+    }
+
+    const SecondConteiner = ({label}) => (
+      <div>
+        <ThirdConteiner label={label}/>
+      </div>
+    )
+
+    class FirstConteiner extends Component {
+      render () {
+        return (
+          <div>
+            <SecondConteiner label={this.props.label}/>
+          </div>
+        )
+      }
+    }
+
+    const testLabel = "Your name:"
+
+    const wrapper = mount(
+      <Form deepSearch>
+        <FirstConteiner label={testLabel}/>
+      </Form>
+    )
+
+    const text = wrapper.find('[htmlFor="name"]').text()
+
+    expect(text).toBe(testLabel)
   })
 })
