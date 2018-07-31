@@ -64,28 +64,40 @@ export default class Form extends Component {
     this.notifyChangeEvent = this.notifyChangeEvent.bind(this)
     this.handleEvent = this.handleEvent.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.mergeErrors = this.mergeErrors.bind(this)
 
     if (props.validateDataProp) {
       this.state.errors = this.validateTree(this.state.errors, this)
     }
   }
 
+  mergeErrors (newErrors) {
+    if (newErrors && !equals(newErrors, this.state.errors)) {
+      this.setState({ errors: merge(this.state.errors, newErrors) })
+    }
+  }
+
   componentWillReceiveProps (nextProps) {
-    const { data, errors } = nextProps
+    const { data, errors: nextErrors } = nextProps
 
     if (data && !equals(data, this.props.data)) {
       this.setState({ data }, () => {
         if (this.props.validateDataProp) {
           const errors = this.validateTree(this.state.errors, this)
+
+          if (nextErrors && !equals(errors, nextErrors)) {
+            this.setState({ errors: merge(errors, nextErrors) })
+            return
+          }
           this.setState({ errors })
+          return
         }
+        this.mergeErrors(nextErrors)
       })
       return
     }
 
-    if (errors && !equals(errors, this.props.errors)) {
-      this.setState({ errors: merge(this.state.errors, errors) })
-    }
+    this.mergeErrors(nextErrors)
   }
 
   notifyChangeEvent () {

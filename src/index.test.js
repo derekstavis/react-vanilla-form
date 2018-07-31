@@ -5,6 +5,7 @@ import Adapter from 'enzyme-adapter-react-16'
 import {
   assocPath,
   dissocPath,
+  merge,
 } from 'ramda'
 
 import Form from '.'
@@ -647,5 +648,33 @@ describe('Errors prop', () => {
     wrapper.update()
 
     assertPropsEquals('error', wrapper, errors)
+  })
+
+  test('merge errors via prop with state errors when passing data and error', () => {
+    const wrapper = mount(
+      <Form
+        validation={baseValidation}
+        validateDataProp
+      >
+        {renderBaseInputs()}
+      </Form>
+    )
+
+    assertPropsEquals('error', wrapper, baseErrors)
+
+    const errors = {
+      name: 'must be another name'
+    }
+
+    wrapper.setProps({
+      data: {
+        name: '',
+      },
+      errors,
+    })
+
+    wrapper.update()
+
+    assertPropsEquals('error', wrapper, merge(baseErrors, errors))
   })
 })
