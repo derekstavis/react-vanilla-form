@@ -143,7 +143,7 @@ validation function or function array.
 
 The validation function receives the input value and in case of an error it
 should return an string with the message to be displayed for the user,
-otherwhise return `false` (or a falsy value).
+otherwise return `false` (or a falsy value).
 
 To capture error messages for an `input`, use a sibling `label` component
 pointing to the `label` using `htmlFor` and define the `role` as `alert`.
@@ -291,7 +291,7 @@ function isNumber (value) {
     name: 'Obi Wan Kenobi',
     address: {
       street: 'A galaxy far far away',
-      number: 'Nevermind',
+      number: 'Never mind',
     }
   }}
   validation={{
@@ -315,7 +315,8 @@ function isNumber (value) {
 ## Validating `data` prop
 
 When setting form data via `data` prop, by default the data will not be
-validated. Sometimes there are situations where you may want to validateand and display errors, e.g.: server-side rendering. To validate the
+validated. Sometimes there are situations where you may want to validate
+and display errors, e.g.: server-side rendering. To validate the
 data set through `data` prop, set `validateDataProp` to true:
 
 ```jsx
@@ -335,7 +336,7 @@ function isNumber (value) {
     name: 'Obi Wan Kenobi',
     address: {
       street: 'A galaxy far far away',
-      number: 'Nevermind',
+      number: 'Never mind',
     }
   }}
   validation={{
