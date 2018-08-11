@@ -17,6 +17,7 @@ class FormState extends React.Component {
           validateDataProp={this.props.validateDataProp}
           validateOn={this.props.validateOn}
           validation={this.props.validation}
+          keepErrorOnFocus={this.props.keepErrorOnFocus}
           onSubmit={(data, errors) =>
             this.setState({ data, errors })
           }
@@ -51,6 +52,7 @@ FormState.defaultProps = {
   validateDataProp: undefined,
   validateOn: undefined,
   validation: undefined,
+  keepErrorOnFocus: undefined,
   onSubmit: undefined,
   onChange: undefined,
 }

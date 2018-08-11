@@ -266,6 +266,47 @@ function isNumber (value) {
  </FormState>
 ```
 
+### Keep validation errors on focus
+
+By default, when an input has an error message and it's touched (focused),
+the error message for the touched input will be cleared.
+
+If you want to keep validations errors, specify `keepErrorOnFocus`:
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+function required (value) {
+  return value ? false : 'This field is required!'
+}
+
+function isNumber (value) {
+  return parseInt(value) ? false : 'Should be a number'
+}
+
+<FormState
+  customErrorProp="errorMessage"
+  validateOn="blur"
+  keepErrorOnFocus
+  validation={{
+    name: required,
+    address: {
+      street: required,
+      number: [required, isNumber],
+    }
+  }}
+>
+  <Input name="name" title="Full name" />
+  <fieldset name="address">
+    <Input name="street" title="Street" />
+    <Input type="text" name="number" title="House Number" />
+  </fieldset>
+  <button>Submit!</button>
+</FormState>
+
+```
+
 ## Setting form data
 
 It's possible to set the form data by passing an object whose keys mirror
