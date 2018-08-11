@@ -6,6 +6,7 @@ import {
   object,
   oneOf,
   string,
+  boolean,
 } from 'prop-types'
 
 import {
@@ -30,9 +31,6 @@ import {
 
 const isErrorEmpty = anyPass([isNil, isEmpty, complement(Boolean)])
 
-const capitalize = str =>
-  str && `${str[0].toUpperCase()}${str.slice(1)}`
-
 const getValue = event => {
   if (event.target) {
     return contains(event.target.value, ['on', 'off'])
@@ -49,6 +47,7 @@ const isCheckable = element =>
   typeof element.props.checked !== 'undefined' ||
   typeof (element.type.defaultProps || {}).checked !== 'undefined'
 
+// eslint-disable-next-line react/no-deprecated
 export default class Form extends Component {
   constructor (props) {
     super(props)
@@ -161,16 +160,21 @@ export default class Form extends Component {
 
     let data = this.state.data
     let errors = this.state.errors
+    const lens = lensPath(path)
 
     if (eventName === 'change') {
-      const lens = lensPath(path)
       const value = getValue(event)
-
       data = set(lens, value, this.state.data)
     }
 
     if (eventName === validateOn) {
       errors = this.validateElement(path, data, errors)
+    }
+
+    if (eventName === 'removeError') {
+      errors = dissocPath(path, this.state.errors)
+      this.setState({ data, errors })
+      return
     }
 
     this.setState({ data, errors }, this.notifyChangeEvent)
@@ -210,6 +214,7 @@ export default class Form extends Component {
       const {
         validateOn,
         customErrorProp: errorProp = 'error',
+        keepErrorOnFocus,
       } = this.props
 
       let props = {}
@@ -219,12 +224,24 @@ export default class Form extends Component {
         ['change', path, element.props.onChange]
       )
 
-      if (['blur', 'focus'].includes(validateOn)) {
-        const eventProp = `on${capitalize(validateOn)}`
-
-        props[eventProp] = partial(
+      if (validateOn === 'blur') {
+        props.onBlur = partial(
           this.handleEvent,
-          [validateOn, path, element.props[eventProp]]
+          [validateOn, path, element.props.onBlur]
+        )
+      }
+
+      if (validateOn === 'focus') {
+        props.onFocus = partial(
+          this.handleEvent,
+          [validateOn, path, element.props.onFocus]
+        )
+      }
+
+      if (validateOn !== 'focus' && !keepErrorOnFocus) {
+        props.onFocus = partial(
+          this.handleEvent,
+          ['removeError', path, element.props.onFocus]
         )
       }
 
@@ -372,6 +389,11 @@ Form.propTypes = {
    * found in UI libraries.
   **/
   customErrorProp: string,
+  /**
+   * Toggles if error messages should be kept after the input receives focus.
+   * Not applicable if `validateOn` is set to `focus`.
+   */
+  keepErrorOnFocus: boolean,
   className: string,
 }
 
@@ -382,6 +404,7 @@ Form.defaultProps = {
   data: undefined,
   onChange: undefined,
   onSubmit: undefined,
+  keepErrorOnFocus: false,
   validateDataProp: false,
   validateOn: 'change',
   validation: {},

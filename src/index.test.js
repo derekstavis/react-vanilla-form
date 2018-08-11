@@ -518,6 +518,35 @@ describe('Form Validation', () => {
 
     expect(error).toEqual(baseErrors.number)
   })
+
+  test('removes input error message on focus', () => {
+    const onChange = jest.fn()
+
+    const wrapper = mount(
+      <Form
+        onChange={onChange}
+        data={{
+          name: 'my name',
+          age: '20',
+        }}
+        errors={{
+          name: 'my name error',
+          age: 'my age error',
+        }}
+      >
+        <input name="name" />
+        <input name="age" />
+      </Form>
+    )
+
+    focus(wrapper, { name: 'name' })
+    change(wrapper, { name: 'name' }, 'other name')
+
+    const data = {name: 'other name', age: '20'}
+    const errors = {age: 'my age error'}
+
+    expect(onChange).toHaveBeenCalledWith(data, errors)
+  })
 })
 
 describe('Data prop', () => {
