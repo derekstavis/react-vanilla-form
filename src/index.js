@@ -1,12 +1,12 @@
-import React, { Component } from 'react'
+import React, { Component, PureComponent } from 'react'
 
 import {
+  boolean,
   func,
   node,
   object,
   oneOf,
   string,
-  boolean,
 } from 'prop-types'
 
 import {
@@ -46,6 +46,14 @@ const isCheckable = element =>
   element.props.type === 'checkbox' ||
   typeof element.props.checked !== 'undefined' ||
   typeof (element.type.defaultProps || {}).checked !== 'undefined'
+
+
+const isClassComponent = maybeClassComponent => {
+  if (typeof maybeClassComponent !== 'function') return false
+  const isComponent = Component.isPrototypeOf(maybeClassComponent)
+  const isPureComponent = PureComponent.isPrototypeOf(maybeClassComponent)
+  return (isComponent || isPureComponent)
+}
 
 // eslint-disable-next-line react/no-deprecated
 export default class Form extends Component {
@@ -185,6 +193,16 @@ export default class Form extends Component {
       return element
     }
 
+    if (typeof element.type === 'function' && this.props.deepSearch) {
+      const component = element.type
+      const props = element.props || {}
+      if (isClassComponent(component)) {
+        element = new component(props).render()
+      } else {
+        element = component(props)
+      }
+    }
+
     const path = element.props.name
       ? [...parentPath, element.props.name]
       : parentPath
@@ -279,6 +297,16 @@ export default class Form extends Component {
   validateTree (errors = {}, element, parentPath = []) {
     if (!element || typeof element === 'string') {
       return errors
+    }
+
+    if (typeof element.type === 'function' && this.props.deepSearch) {
+      const component = element.type
+      const props = element.props || {}
+      if (isClassComponent(component)) {
+        element = new component(props).render()
+      } else {
+        element = component(props)
+      }
     }
 
     const children = React.Children.toArray(element.props.children)
@@ -394,7 +422,18 @@ Form.propTypes = {
    * Not applicable if `validateOn` is set to `focus`.
    */
   keepErrorOnFocus: boolean,
+  /**
+   * Toggles if it should validate the form data set through the `data` prop.
+   */
+  validateDataProp: boolean,
+  /**
+   * The CSS classes to be passed down to the `<form>` element.
+   */
   className: string,
+  /**
+   * Toggles search for form inputs inside custom containers.
+   */
+  deepSearch: boolean,
 }
 
 Form.defaultProps = {
@@ -402,9 +441,10 @@ Form.defaultProps = {
   className: '',
   customErrorProp: undefined,
   data: undefined,
+  deepSearch: false,
+  keepErrorOnFocus: false,
   onChange: undefined,
   onSubmit: undefined,
-  keepErrorOnFocus: false,
   validateDataProp: false,
   validateOn: 'change',
   validation: {},
