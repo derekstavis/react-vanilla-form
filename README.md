@@ -15,7 +15,7 @@ Wire `onSubmit` prop to `Form` component to get the serialized data from
 the form. Pass `validations` to display and catch errors in the form.
 Use `onChange` (or not) to get realtime data updates.
 
-```
+```jsx
 import Form from 'react-vanilla-form'
 
 <Form onSubmit={data => console.log(data)}>
