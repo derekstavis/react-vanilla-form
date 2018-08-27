@@ -6,7 +6,7 @@ import {
   object,
   oneOf,
   string,
-  boolean,
+  bool,
 } from 'prop-types'
 
 import {
@@ -393,7 +393,7 @@ Form.propTypes = {
    * Toggles if error messages should be kept after the input receives focus.
    * Not applicable if `validateOn` is set to `focus`.
    */
-  keepErrorOnFocus: boolean,
+  keepErrorOnFocus: bool,
   className: string,
 }
 
