@@ -1,5 +1,6 @@
 import React from 'react'
 import Form from '.'
+import Themed from './PlaygroundTheme'
 
 class FormState extends React.Component {
   constructor (props) {
@@ -9,7 +10,7 @@ class FormState extends React.Component {
 
   render () {
     return (
-      <div>
+      <Themed>
         <Form
           customErrorProp={this.props.customErrorProp}
           data={this.props.data}
@@ -29,18 +30,26 @@ class FormState extends React.Component {
           {this.props.children}
         </Form>
         {this.state.data &&
-          <pre><code>
-            result:<br />
-            {JSON.stringify(this.state.data, null, 2)}
-          </code></pre>
+          <React.Fragment>
+            <h4>Data:</h4>
+            <pre>
+              <code>
+                {JSON.stringify(this.state.data, null, 2)}
+              </code>
+            </pre>
+          </React.Fragment>
         }
         {this.state.errors &&
-          <pre><code>
-            Errors:<br />
-            {JSON.stringify(this.state.errors, null, 2)}
-          </code></pre>
+          <React.Fragment>
+            <h4>Errors:</h4>
+            <pre>
+              <code>
+                {JSON.stringify(this.state.errors, null, 2)}
+              </code>
+            </pre>
+          </React.Fragment>
         }
-      </div>
+      </Themed>
     )
   }
 }
@@ -57,5 +66,5 @@ FormState.defaultProps = {
   onChange: undefined,
 }
 
-module.exports = FormState
+export default FormState
 

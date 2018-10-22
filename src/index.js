@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 
 import {
+  arrayOf,
   func,
   node,
   object,
@@ -281,6 +282,12 @@ export default class Form extends Component {
       return errors
     }
 
+    if (this.context && this.context.vanillaFormDescendants) {
+      if (element in this.context.vanillaFormDescendants) {
+        return element.validateTree({}, element)
+      }
+    }
+
     const children = React.Children.toArray(element.props.children)
     const path = element.props.name
       ? [...parentPath, element.props.name]
@@ -326,15 +333,34 @@ export default class Form extends Component {
     )
   }
 
+  getChildContext () {
+    if (!(this.context && this.context.vanillaFormDescendants)) {
+      return {
+        vanillaFormDescendants: [],
+      }
+    }
+  }
+
   render () {
     const { className } = this.props
 
+    const children = React.Children.map(
+      this.props.children,
+      partialRight(this.cloneTree, [[]])
+    )
+
+    if (this.context.vanillaFormDescendants) {
+      this.context.vanillaFormDescendants.push(this)
+      return (
+        <fieldset className={className}>
+          {children}
+        </fieldset>
+      )
+    }
+
     return (
-      <form onSubmit={this.handleSubmit} className={className}>
-        {React.Children.map(
-          this.props.children,
-          partialRight(this.cloneTree, [this, []])
-        )}
+      <form className={className} onSubmit={this.handleSubmit}>
+          {children}
       </form>
     )
   }
@@ -395,6 +421,14 @@ Form.propTypes = {
    */
   keepErrorOnFocus: bool,
   className: string,
+}
+
+Form.contextTypes = {
+  vanillaFormDescendants: arrayOf(node),
+}
+
+Form.childContextTypes = {
+  vanillaFormDescendants: arrayOf(node),
 }
 
 Form.defaultProps = {

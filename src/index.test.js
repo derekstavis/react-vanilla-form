@@ -120,6 +120,33 @@ const baseErrors = {
   accepted_terms: 'required',
 }
 
+describe('Form nesting', () => {
+  test('serializes input[type="text"]', () => {
+    const onSubmit = jest.fn()
+
+    const wrapper = mount(
+      <Form onSubmit={onSubmit}>
+        <Form name="nestedForm">
+          <input name="name" />
+          <input name="age" />
+        </Form>
+      </Form>
+    )
+
+    change(wrapper, { name: 'name' }, baseData.name)
+    change(wrapper, { name: 'age' }, baseData.age)
+
+    submit(wrapper)
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      nestedForm: {
+        name: baseData.name,
+        age: baseData.age,
+      },
+    })
+  })
+})
+
 describe('Form Serialization', () => {
   test('serializes input[type="text"]', () => {
     const onSubmit = jest.fn()

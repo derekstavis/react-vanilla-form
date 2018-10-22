@@ -1,6 +1,9 @@
 # styleguide
 /styleguide
 
+#docz
+.docz
+
 # dependencies
 /node_modules
 
