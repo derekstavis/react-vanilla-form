@@ -1,410 +1,407 @@
 import React, { Component } from 'react'
 
-import {
-  func,
-  node,
-  object,
-  oneOf,
-  string,
-  bool,
-} from 'prop-types'
+import { bool, func, node, object, oneOf, string } from 'prop-types'
 
 import {
-  anyPass,
-  complement,
-  contains,
-  dissocPath,
-  dropLast,
-  equals,
-  is,
-  isEmpty,
-  isNil,
-  lensPath,
-  merge,
-  partial,
-  pathSatisfies,
-  reduce,
-  set,
-  view,
+ anyPass,
+ complement,
+ contains,
+ dissocPath,
+ dropLast,
+ equals,
+ is,
+ isEmpty,
+ isNil,
+ lensPath,
+ merge,
+ partial,
+ pathSatisfies,
+ reduce,
+ set,
+ view,
 } from 'ramda'
 
 const isErrorEmpty = anyPass([isNil, isEmpty, complement(Boolean)])
 
-const getValue = event => {
-  if (event.target) {
-    return contains(event.target.value, ['on', 'off'])
-      ? event.target.checked
-      : event.target.value
-  }
+const getValue = (event) => {
+ if (event.target) {
+  return contains(event.target.value, ['on', 'off'])
+   ? event.target.checked
+   : event.target.value
+ }
 
-  return event
+ return event
 }
 
-const isCheckable = element =>
-  element.props.type === 'radio' ||
-  element.props.type === 'checkbox' ||
-  typeof element.props.checked !== 'undefined' ||
-  typeof (element.type.defaultProps || {}).checked !== 'undefined'
+const isCheckable = (element) =>
+ element.props.type === 'radio' ||
+ element.props.type === 'checkbox' ||
+ typeof element.props.checked !== 'undefined' ||
+ typeof (element.type.defaultProps || {}).checked !== 'undefined'
 
 // eslint-disable-next-line react/no-deprecated
 export default class Form extends Component {
-  constructor (props) {
-    super(props)
+ constructor(props) {
+  super(props)
 
-    this.state = {
-      data: props.data || {},
-      errors: props.errors || {},
-    }
-
-    this.cloneTree = this.cloneTree.bind(this)
-    this.validateTree = this.validateTree.bind(this)
-    this.validateElement = this.validateElement.bind(this)
-    this.notifyChangeEvent = this.notifyChangeEvent.bind(this)
-    this.handleEvent = this.handleEvent.bind(this)
-    this.handleSubmit = this.handleSubmit.bind(this)
-    this.mergeErrors = this.mergeErrors.bind(this)
-
-    if (props.validateDataProp) {
-      this.state.errors = this.validateTree(this.state.errors, this)
-    }
+  this.state = {
+   data: props.data || {},
+   errors: props.errors || {},
   }
 
-  mergeErrors (newErrors) {
-    if (newErrors && !equals(newErrors, this.state.errors)) {
-      this.setState({ errors: merge(this.state.errors, newErrors) })
-    }
+  this.cloneTree = this.cloneTree.bind(this)
+  this.validateTree = this.validateTree.bind(this)
+  this.validateElement = this.validateElement.bind(this)
+  this.notifyChangeEvent = this.notifyChangeEvent.bind(this)
+  this.handleEvent = this.handleEvent.bind(this)
+  this.handleSubmit = this.handleSubmit.bind(this)
+  this.mergeErrors = this.mergeErrors.bind(this)
+
+  if (props.validateDataProp) {
+   this.state.errors = this.validateTree(this.state.errors, this)
   }
+ }
 
-  componentWillReceiveProps (nextProps) {
-    const { data, errors: nextErrors } = nextProps
+ public mergeErrors(newErrors) {
+  if (newErrors && !equals(newErrors, this.state.errors)) {
+   this.setState({ errors: merge(this.state.errors, newErrors) })
+  }
+ }
 
-    if (data && !equals(data, this.props.data)) {
-      this.setState({ data }, () => {
-        if (this.props.validateDataProp) {
-          const errors = this.validateTree(this.state.errors, this)
+ public componentWillReceiveProps(nextProps) {
+  const { data, errors: nextErrors } = nextProps
 
-          if (nextErrors && !equals(errors, nextErrors)) {
-            this.setState({ errors: merge(errors, nextErrors) })
-            return
-          }
-          this.setState({ errors })
-          return
-        }
-        this.mergeErrors(nextErrors)
-      })
+  if (data && !equals(data, this.props.data)) {
+   this.setState({ data }, () => {
+    if (this.props.validateDataProp) {
+     const errors = this.validateTree(this.state.errors, this)
+
+     if (nextErrors && !equals(errors, nextErrors)) {
+      this.setState({ errors: merge(errors, nextErrors) })
       return
+     }
+     this.setState({ errors })
+     return
     }
-
     this.mergeErrors(nextErrors)
+   })
+   return
   }
 
-  notifyChangeEvent () {
-    const { onChange } = this.props
+  this.mergeErrors(nextErrors)
+ }
 
-    if (typeof onChange === 'function') {
-      const { data, errors } = this.state
-      onChange(data, errors)
-    }
+ public notifyChangeEvent() {
+  const { onChange } = this.props
+
+  if (typeof onChange === 'function') {
+   const { data, errors } = this.state
+   onChange(data, errors)
+  }
+ }
+
+ public validateElement(path, data, errors) {
+  const lens = lensPath(path)
+  const validation = view(lens, this.props.validation)
+
+  if (!validation) {
+   return errors
   }
 
-  validateElement (path, data, errors) {
-    const lens = lensPath(path)
-    const validation = view(lens, this.props.validation)
+  const value = view(lens, data)
 
-    if (!validation) {
-      return errors
+  if (is(Array, validation)) {
+   for (const validate of validation) {
+    const err = validate(value)
+
+    if (!isErrorEmpty(err)) {
+     return set(lens, err, errors)
     }
+   }
+  } else if (typeof validation === 'function') {
+   const err = validation(value)
 
-    const value = view(lens, data)
+   if (!isErrorEmpty(err)) {
+    return set(lens, err, errors)
+   }
+  }
 
-    if (is(Array, validation)) {
-      for (let validate of validation) {
-        const err = validate(value)
+  const parentPath = dropLast(1, path)
 
-        if (!isErrorEmpty(err)) {
-          return set(lens, err, errors)
-        }
-      }
+  if (parentPath.length > 0) {
+   if (pathSatisfies(isErrorEmpty, parentPath, errors)) {
+    return dissocPath(parentPath, errors)
+   }
+  }
+
+  return dissocPath(path, errors)
+ }
+
+ public handleEvent(eventName, path, originalHandler, event) {
+  if (typeof originalHandler === 'function') {
+   originalHandler(event)
+  }
+
+  if (event && event.defaultPrevented) {
+   return
+  }
+
+  const { validateOn } = this.props
+
+  let data = this.state.data
+  let errors = this.state.errors
+  const lens = lensPath(path)
+
+  if (eventName === 'change') {
+   const value = getValue(event)
+   data = set(lens, value, this.state.data)
+  }
+
+  if (eventName === validateOn) {
+   errors = this.validateElement(path, data, errors)
+  }
+
+  if (eventName === 'removeError') {
+   errors = dissocPath(path, this.state.errors)
+   this.setState({ data, errors })
+   return
+  }
+
+  this.setState({ data, errors }, this.notifyChangeEvent)
+ }
+
+ public cloneTree(element, parentPath = []) {
+  if (!element || typeof element === 'string') {
+   return element
+  }
+
+  const path = element.props.name
+   ? [...parentPath, element.props.name]
+   : parentPath
+
+  if (element.type === 'fieldset') {
+   return React.cloneElement(
+    element,
+    {},
+    React.Children.map(element.props.children, (child) =>
+     this.cloneTree(child, path)
+    )
+   )
+  }
+
+  if (element.props.role === 'alert' && element.props.htmlFor) {
+   const lens = lensPath([...path, element.props.htmlFor])
+   const errors = view(lens, this.state.errors)
+
+   if (errors) {
+    const children = is(Array, errors) ? errors[0] : errors
+    return React.cloneElement(element, { children })
+   }
+
+   return element
+  }
+
+  if (element.props.name) {
+   const lens = lensPath(path)
+
+   const {
+    validateOn,
+    customErrorProp: errorProp = 'error',
+    keepErrorOnFocus,
+   } = this.props
+
+   const props = {}
+
+   props.onChange = partial(this.handleEvent, [
+    'change',
+    path,
+    element.props.onChange,
+   ])
+
+   if (validateOn === 'blur') {
+    props.onBlur = partial(this.handleEvent, [
+     validateOn,
+     path,
+     element.props.onBlur,
+    ])
+   }
+
+   if (validateOn === 'focus') {
+    props.onFocus = partial(this.handleEvent, [
+     validateOn,
+     path,
+     element.props.onFocus,
+    ])
+   }
+
+   if (validateOn !== 'focus' && !keepErrorOnFocus) {
+    props.onFocus = partial(this.handleEvent, [
+     'removeError',
+     path,
+     element.props.onFocus,
+    ])
+   }
+
+   const value = view(lens, this.state.data)
+
+   if (isCheckable(element)) {
+    if (typeof value === 'boolean') {
+     props.checked = value
+    } else {
+     props.checked = value === element.props.value
     }
+   } else {
+    props.value = value
+   }
 
-    else if (typeof validation === 'function') {
-      const err = validation(value)
+   const error = view(lens, this.state.errors)
 
-      if (!isErrorEmpty(err)) {
-        return set(lens, err, errors)
-      }
-    }
+   if (error) {
+    props[errorProp] = error
+   }
 
+   return React.cloneElement(element, props)
+  }
+
+  if (element.props.children) {
+   return React.cloneElement(
+    element,
+    {},
+    React.Children.map(element.props.children, (child) =>
+     this.cloneTree(child, path)
+    )
+   )
+  }
+
+  return element
+ }
+
+ public validateTree(errors = {}, element, parentPath = []) {
+  if (!element || typeof element === 'string') {
+   return errors
+  }
+
+  const children = React.Children.toArray(element.props.children)
+  const path = element.props.name
+   ? [...parentPath, element.props.name]
+   : parentPath
+
+  if (element.type !== 'select' && children.length > 0) {
+   const childErrors = reduce(
+    (acc, item) => this.validateTree(acc, item, path),
+    errors,
+    children
+   )
+
+   if (isErrorEmpty(childErrors)) {
     const parentPath = dropLast(1, path)
 
-    if (parentPath.length > 0) {
-      if (pathSatisfies(isErrorEmpty, parentPath, errors)) {
-        return dissocPath(parentPath, errors)
-      }
+    if (parentPath.length === 0) {
+     return {}
     }
 
-    return dissocPath(path, errors)
+    return dissocPath(parentPath, errors)
+   }
+
+   return childErrors
   }
 
-  handleEvent (eventName, path, originalHandler, event) {
-    if (typeof originalHandler === 'function') {
-      originalHandler(event)
-    }
-
-    if (event && event.defaultPrevented) {
-      return
-    }
-
-    const { validateOn } = this.props
-
-    let data = this.state.data
-    let errors = this.state.errors
-    const lens = lensPath(path)
-
-    if (eventName === 'change') {
-      const value = getValue(event)
-      data = set(lens, value, this.state.data)
-    }
-
-    if (eventName === validateOn) {
-      errors = this.validateElement(path, data, errors)
-    }
-
-    if (eventName === 'removeError') {
-      errors = dissocPath(path, this.state.errors)
-      this.setState({ data, errors })
-      return
-    }
-
-    this.setState({ data, errors }, this.notifyChangeEvent)
+  if (element.props.name) {
+   return this.validateElement(path, this.state.data, errors)
   }
 
-  cloneTree (element, parentPath = []) {
-    if (!element || typeof element === 'string') {
-      return element
-    }
+  return errors
+ }
 
-    const path = element.props.name
-      ? [...parentPath, element.props.name]
-      : parentPath
+ public handleSubmit(event) {
+  event.preventDefault()
 
-    if (element.type === 'fieldset') {
-      return React.cloneElement(element, {}, React.Children.map(
-        element.props.children,
-        child => this.cloneTree(child, path)
-      ))
-    }
+  const errors = this.validateTree({}, this)
 
-    if (element.props.role === 'alert' && element.props.htmlFor) {
-      const lens = lensPath([...path, element.props.htmlFor])
-      const errors = view(lens, this.state.errors)
+  this.setState({ errors }, () =>
+   isErrorEmpty(this.state.errors)
+    ? this.props.onSubmit(this.state.data)
+    : this.props.onSubmit(this.state.data, this.state.errors)
+  )
+ }
 
-      if (errors) {
-        const children = is(Array, errors) ? errors[0] : errors
-        return React.cloneElement(element, { children })
-      }
+ public render() {
+  const { className } = this.props
 
-      return element
-    }
-
-    if (element.props.name) {
-      const lens = lensPath(path)
-
-      const {
-        validateOn,
-        customErrorProp: errorProp = 'error',
-        keepErrorOnFocus,
-      } = this.props
-
-      let props = {}
-
-      props.onChange = partial(
-        this.handleEvent,
-        ['change', path, element.props.onChange]
-      )
-
-      if (validateOn === 'blur') {
-        props.onBlur = partial(
-          this.handleEvent,
-          [validateOn, path, element.props.onBlur]
-        )
-      }
-
-      if (validateOn === 'focus') {
-        props.onFocus = partial(
-          this.handleEvent,
-          [validateOn, path, element.props.onFocus]
-        )
-      }
-
-      if (validateOn !== 'focus' && !keepErrorOnFocus) {
-        props.onFocus = partial(
-          this.handleEvent,
-          ['removeError', path, element.props.onFocus]
-        )
-      }
-
-      const value = view(lens, this.state.data)
-
-      if (isCheckable(element)) {
-        if (typeof value === 'boolean') {
-          props.checked = value
-        } else {
-          props.checked = value === element.props.value
-        }
-      } else {
-        props.value = value
-      }
-
-      const error = view(lens, this.state.errors)
-
-      if (error) {
-        props[errorProp] = error
-      }
-
-      return React.cloneElement(element, props)
-    }
-
-    if (element.props.children) {
-      return React.cloneElement(element, {}, React.Children.map(
-        element.props.children,
-        child => this.cloneTree(child, path)
-      ))
-    }
-
-    return element
-  }
-
-  validateTree (errors = {}, element, parentPath = []) {
-    if (!element || typeof element === 'string') {
-      return errors
-    }
-
-    const children = React.Children.toArray(element.props.children)
-    const path = element.props.name
-      ? [...parentPath, element.props.name]
-      : parentPath
-
-    if (element.type !== 'select' && children.length > 0) {
-      const childErrors = reduce(
-        (acc, item) => this.validateTree(acc, item, path),
-        errors,
-        children
-      )
-
-      if (isErrorEmpty(childErrors)) {
-        const parentPath = dropLast(1, path)
-
-        if (parentPath.length === 0) {
-          return {}
-        }
-
-        return dissocPath(parentPath, errors)
-      }
-
-      return childErrors
-    }
-
-    if (element.props.name) {
-      return this.validateElement(path, this.state.data, errors)
-    }
-
-    return errors
-  }
-
-  handleSubmit (event) {
-    event.preventDefault()
-
-    const errors = this.validateTree({}, this)
-
-    this.setState(
-      { errors },
-      () => isErrorEmpty(this.state.errors)
-        ? this.props.onSubmit(this.state.data)
-        : this.props.onSubmit(this.state.data, this.state.errors)
-    )
-  }
-
-  render () {
-    const { className } = this.props
-
-    return (
-      <form onSubmit={this.handleSubmit} className={className}>
-        {React.Children.map(
-          this.props.children,
-          (child) => this.cloneTree(child)
-        )}
-      </form>
-    )
-  }
+  return (
+   <form onSubmit={this.handleSubmit} className={className}>
+    {React.Children.map(this.props.children, (child) => this.cloneTree(child))}
+   </form>
+  )
+ }
 }
 
 Form.propTypes = {
-  /**
-   * The children can contain any kind of component. Inputs with name
-   * property will be tracked for changes using `onChange` callback.
-   * Sibling labels with `role=alert` and `htmlFor` pointing to a validated
-   * component will be used to present the error message.
+ /**
+  * The children can contain any kind of component. Inputs with name
+  * property will be tracked for changes using `onChange` callback.
+  * Sibling labels with `role=alert` and `htmlFor` pointing to a validated
+  * component will be used to present the error message.
   **/
-  children: node,
-  /**
-   * The validation object whose keys mirror form field structure.
-   * Values of this object can be either functions or a function array.
-   * Validation functions receives the input string and should return
-   * a string message on error and a falsy value otherwise.
+ children: node,
+ /**
+  * The validation object whose keys mirror form field structure.
+  * Values of this object can be either functions or a function array.
+  * Validation functions receives the input string and should return
+  * a string message on error and a falsy value otherwise.
   **/
-  validation: object, // eslint-disable-line
-  /**
+ validation: object, // eslint-disable-line
+ /**
   * The event where validation will be triggered. By default, field
   * validations runs on `change` event.
   **/
-  validateOn: oneOf(['change', 'blur', 'focus']),
-  /**
-   * The form submit callback. Receives the serialized form as an object.
+ validateOn: oneOf(['change', 'blur', 'focus']),
+ /**
+  * The form submit callback. Receives the serialized form as an object.
   **/
-  onSubmit: func,
-  /**
-   * The form change callback. This callback runs on every form control's
-   * `onChange`, right after validations. When this is defined, the form
-   * behaves as a controlled component, and the user is responsible for
-   * updating the form state via `data` prop.
+ onSubmit: func,
+ /**
+  * The form change callback. This callback runs on every form control's
+  * `onChange`, right after validations. When this is defined, the form
+  * behaves as a controlled component, and the user is responsible for
+  * updating the form state via `data` prop.
   **/
-  /**
-   * @callback onChange
-   * @param {object} data
-   * @param {object} errors
+ /**
+  * @callback onChange
+  * @param {object} data
+  * @param {object} errors
   **/
-  onChange: func,
-  /**
-   * The form data object whose keys mirror form field structure.
-   * Setting this prop will set the form controls' values accordingly.
-   * This can be used for rendering an initial state or to use the form
-   * as a controlled component.
+ onChange: func,
+ /**
+  * The form data object whose keys mirror form field structure.
+  * Setting this prop will set the form controls' values accordingly.
+  * This can be used for rendering an initial state or to use the form
+  * as a controlled component.
   **/
-  data: object, // eslint-disable-line
-  /**
-   * A property name to inject the error message in the named field.
-   * This is useful for input wrappers with builtin error label, commonly
-   * found in UI libraries.
+ data: object, // eslint-disable-line
+ /**
+  * A property name to inject the error message in the named field.
+  * This is useful for input wrappers with builtin error label, commonly
+  * found in UI libraries.
   **/
-  customErrorProp: string,
-  /**
-   * Toggles if error messages should be kept after the input receives focus.
-   * Not applicable if `validateOn` is set to `focus`.
-   */
-  keepErrorOnFocus: bool,
-  className: string,
+ customErrorProp: string,
+ /**
+  * Toggles if error messages should be kept after the input receives focus.
+  * Not applicable if `validateOn` is set to `focus`.
+  */
+ keepErrorOnFocus: bool,
+ className: string,
 }
 
 Form.defaultProps = {
-  children: undefined,
-  className: '',
-  customErrorProp: undefined,
-  data: undefined,
-  onChange: undefined,
-  onSubmit: undefined,
-  keepErrorOnFocus: false,
-  validateDataProp: false,
-  validateOn: 'change',
-  validation: {},
+ children: undefined,
+ className: '',
+ customErrorProp: undefined,
+ data: undefined,
+ onChange: undefined,
+ onSubmit: undefined,
+ keepErrorOnFocus: false,
+ validateDataProp: false,
+ validateOn: 'change',
+ validation: {},
 }
