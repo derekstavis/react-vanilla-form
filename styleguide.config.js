@@ -3,16 +3,19 @@ module.exports = {
   showSidebar: false,
   sections: [
     { content: 'README.md' },
-    { components: 'src/index.js' },
+    { components: 'src/index.tsx' },
   ],
   require: [
     'milligram',
   ],
   webpackConfig: {
+    resolve: {
+      extensions: ['.tsx'],
+    },
     module: {
       rules: [
         {
-          test: /\.jsx?$/,
+          test: /\.tsx?$/,
           exclude: /node_modules/,
           loader: 'babel-loader'
         },

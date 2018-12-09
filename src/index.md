@@ -43,7 +43,7 @@ class FormState extends React.Component {
 Then proceed to place components inside the form:
 
 ```jsx
-import FormState from './FormState.js';
+import FormState from './FormState';
 
 <FormState>
   <label htmlFor="name">
@@ -68,7 +68,7 @@ import FormState from './FormState.js';
 You can even nest objects infinite levels using the standard `fieldset` tag:
 
 ```jsx
-import FormState from './FormState.js';
+import FormState from './FormState';
 
 <FormState>
   <label htmlFor="name">
@@ -119,8 +119,8 @@ Input.defaultProps = {
 They should work as expected:
 
 ```jsx
-import FormState from './FormState.js';
-import Input from './CustomInput.js';
+import FormState from './FormState';
+import Input from './CustomInput';
 
 <FormState>
   <Input type="text" name="name" title="Full name" />
@@ -153,8 +153,8 @@ sections.
 
 
 ```jsx
-import FormState from './FormState.js';
-import Input from './CustomInput.js';
+import FormState from './FormState';
+import Input from './CustomInput';
 
 function required (value) {
   return value ? false : 'This field is required!'
@@ -207,8 +207,8 @@ const Input = ({ name, type, onChange, title, value, errorMessage }) => (
 Configure `customErrorProp="errorMessage"` on the form with the prop name:
 
 ```jsx
-import FormState from './FormState.js';
-import Input from './CustomInput.js';
+import FormState from './FormState';
+import Input from './CustomInput';
 
 function required (value) {
   return value ? false : 'This field is required!'
@@ -235,8 +235,8 @@ supported events are `change`, `focus`, `blur` and `submit`. Using
 `submit` will effectively disable realtime validation.
 
 ```jsx
-import FormState from './FormState.js';
-import Input from './CustomInput.js';
+import FormState from './FormState';
+import Input from './CustomInput';
 
 function required (value) {
   return value ? false : 'This field is required!'
@@ -274,8 +274,8 @@ the error message for the touched input will be cleared.
 If you want to keep validations errors, specify `keepErrorOnFocus`:
 
 ```jsx
-import FormState from './FormState.js';
-import Input from './CustomInput.js';
+import FormState from './FormState';
+import Input from './CustomInput';
 
 function required (value) {
   return value ? false : 'This field is required!'
@@ -316,8 +316,8 @@ Currently the form keeps an internal state. When the `data` prop change
 the internal state will be synced with the prop's value.
 
 ```jsx
-import FormState from './FormState.js';
-import Input from './CustomInput.js';
+import FormState from './FormState';
+import Input from './CustomInput';
 
 function required (value) {
   return value ? false : 'This field is required!'
@@ -361,8 +361,8 @@ and display errors, e.g.: server-side rendering. To validate the
 data set through `data` prop, set `validateDataProp` to true:
 
 ```jsx
-import FormState from './FormState.js';
-import Input from './CustomInput.js';
+import FormState from './FormState';
+import Input from './CustomInput';
 
 function required (value) {
   return value ? false : 'This field is required!'
@@ -405,8 +405,8 @@ It is possible to overwrite form errors using `errors` prop. This is
 useful for displaying server errors directly in fields.
 
 ```jsx
-import FormState from './FormState.js';
-import Input from './CustomInput.js';
+import FormState from './FormState';
+import Input from './CustomInput';
 
 function required (value) {
   return value ? false : 'This field is required!'
@@ -433,8 +433,8 @@ on form state.
 > *Important:* It's not required to retro-feed `data` prop.
 
 ```jsx
-import FormState from './FormState.js';
-import Input from './CustomInput.js';
+import FormState from './FormState';
+import Input from './CustomInput';
 
 function required (value) {
   return value ? false : 'This field is required!'
@@ -499,8 +499,8 @@ changed a single input value without needing to subscribe to form's
 `onChange` (and thus having to keep comparing previous/next values):
 
 ```jsx
-import FormState from './FormState.js';
-import Input from './CustomInput.js';
+import FormState from './FormState';
+import Input from './CustomInput';
 
 <FormState>
   <Input name="name" title="Full name" onChange={console.log} />
