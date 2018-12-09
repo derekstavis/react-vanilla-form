@@ -22,7 +22,6 @@ import {
   lensPath,
   merge,
   partial,
-  partialRight,
   pathSatisfies,
   reduce,
   set,
@@ -180,7 +179,7 @@ export default class Form extends Component {
     this.setState({ data, errors }, this.notifyChangeEvent)
   }
 
-  cloneTree (element, index, parentPath = []) {
+  cloneTree (element, parentPath = []) {
     if (!element || typeof element === 'string') {
       return element
     }
@@ -192,7 +191,7 @@ export default class Form extends Component {
     if (element.type === 'fieldset') {
       return React.cloneElement(element, {}, React.Children.map(
         element.props.children,
-        partialRight(this.cloneTree, [path])
+        child => this.cloneTree(child, path)
       ))
     }
 
@@ -269,7 +268,7 @@ export default class Form extends Component {
     if (element.props.children) {
       return React.cloneElement(element, {}, React.Children.map(
         element.props.children,
-        partialRight(this.cloneTree, [path])
+        child => this.cloneTree(child, path)
       ))
     }
 
@@ -288,7 +287,7 @@ export default class Form extends Component {
 
     if (element.type !== 'select' && children.length > 0) {
       const childErrors = reduce(
-        partialRight(this.validateTree, [path]),
+        (acc, item) => this.validateTree(acc, item, path),
         errors,
         children
       )
@@ -333,7 +332,7 @@ export default class Form extends Component {
       <form onSubmit={this.handleSubmit} className={className}>
         {React.Children.map(
           this.props.children,
-          partialRight(this.cloneTree, [this, []])
+          (child) => this.cloneTree(child)
         )}
       </form>
     )
