@@ -57,5 +57,4 @@ FormState.defaultProps = {
   onChange: undefined,
 }
 
-module.exports = FormState
-
+export default FormState;

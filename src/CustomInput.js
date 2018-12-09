@@ -30,4 +30,4 @@ Input.defaultProps = {
   type: 'text',
 }
 
-module.exports = Input
+export default Input
