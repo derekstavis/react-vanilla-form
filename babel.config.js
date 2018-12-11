@@ -1,4 +1,5 @@
 module.exports = {
+	sourceMaps: "inline",
   presets: [
     '@babel/preset-env',
     '@babel/preset-react',
@@ -10,7 +11,7 @@ module.exports = {
     [
       'babel-plugin-module-resolver',
       {
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', 'json'],
         root: ['./src'],
       },
     ],

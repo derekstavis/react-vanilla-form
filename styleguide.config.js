@@ -1,3 +1,5 @@
+var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+
 module.exports = {
   title: 'React Vanilla Form',
   showSidebar: false,
@@ -25,5 +27,8 @@ module.exports = {
         }
       ],
     },
+    plugins: [
+      new ForkTsCheckerWebpackPlugin(),
+    ],
   },
 }

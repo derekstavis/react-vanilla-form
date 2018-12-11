@@ -1,14 +1,15 @@
 {
 	"compilerOptions": {
-		"target": "esnext",
+		"allowSyntheticDefaultImports": true,
+		"declaration": true,
+		"esModuleInterop": true,
+		"jsx": "preserve",
 		"moduleResolution": "node",
-		"allowJs": true,
-		"noEmit": true,
+		"outDir": "dist",
 		"strict": true,
-		"isolatedModules": true,
-		"esModuleInterop": true
+		"target": "esnext"
 	},
 	"include": [
-		"src"
+		"src/*.tsx"
 	]
 }
