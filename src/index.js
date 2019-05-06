@@ -21,6 +21,7 @@ import {
   isNil,
   lensPath,
   merge,
+  omit,
   partial,
   partialRight,
   pathSatisfies,
@@ -46,6 +47,20 @@ const isCheckable = element =>
   element.props.type === 'checkbox' ||
   typeof element.props.checked !== 'undefined' ||
   typeof (element.type.defaultProps || {}).checked !== 'undefined'
+
+const ownProps = [
+  'children',
+  'customErrorProp',
+  'data',
+  'onChange',
+  'onSubmit',
+  'keepErrorOnFocus',
+  'validateDataProp',
+  'validateOn',
+  'validation',
+]
+
+const omitOwnProps = omit(ownProps)
 
 // eslint-disable-next-line react/no-deprecated
 export default class Form extends Component {
@@ -327,10 +342,11 @@ export default class Form extends Component {
   }
 
   render () {
-    const { className } = this.props
-
     return (
-      <form onSubmit={this.handleSubmit} className={className}>
+      <form
+        onSubmit={this.handleSubmit}
+        {...omitOwnProps(this.props)}
+      >
         {React.Children.map(
           this.props.children,
           partialRight(this.cloneTree, [this, []])
@@ -394,12 +410,10 @@ Form.propTypes = {
    * Not applicable if `validateOn` is set to `focus`.
    */
   keepErrorOnFocus: bool,
-  className: string,
 }
 
 Form.defaultProps = {
   children: undefined,
-  className: '',
   customErrorProp: undefined,
   data: undefined,
   onChange: undefined,
