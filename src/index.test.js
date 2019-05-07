@@ -707,3 +707,17 @@ describe('Errors prop', () => {
     assertPropsEquals('error', wrapper, merge(baseErrors, errors))
   })
 })
+
+describe('Own props', () => {
+  test('pass native form props to inner form component', () => {
+    const wrapper = mount(
+      <Form
+        className="Xuxa"
+        noValidate
+      />
+    )
+
+    expect(getProp('className', wrapper, 'form')).toEqual('Xuxa')
+    expect(getProp('noValidate', wrapper, 'form')).toBeTruthy()
+  })
+})
