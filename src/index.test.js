@@ -381,6 +381,35 @@ describe('Form Validation', () => {
     )
   })
 
+  test('receives current form data', () => {
+    const passwordConfirmationValidator = jest.fn()
+    const value = '1234'
+
+    const currentData = {
+      password: '123456789',
+      passwordConfirmation: '1234'
+    }
+
+    const wrapper = mount(
+      <Form
+        data={{
+          password: '123456789',
+          passwordConfirmation: '1234'
+        }}
+        validation={{
+          passwordConfirmation: passwordConfirmationValidator,
+        }}
+      >
+        <input name="password"/>
+        <input name="passwordConfirmation"/>
+      </Form>
+    )
+
+    change(wrapper, { name: 'passwordConfirmation' }, value)
+
+    expect(passwordConfirmationValidator).toHaveBeenNthCalledWith(1, value, currentData)
+  })
+
   test('does not validate the input when default is prevented', () => {
     const onChange = jest.fn()
 

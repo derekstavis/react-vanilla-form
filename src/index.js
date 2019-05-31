@@ -135,7 +135,7 @@ export default class Form extends Component {
 
     if (is(Array, validation)) {
       for (let validate of validation) {
-        const err = validate(value)
+        const err = validate(value, data)
 
         if (!isErrorEmpty(err)) {
           return set(lens, err, errors)
@@ -144,7 +144,7 @@ export default class Form extends Component {
     }
 
     else if (typeof validation === 'function') {
-      const err = validation(value)
+      const err = validation(value, data)
 
       if (!isErrorEmpty(err)) {
         return set(lens, err, errors)
