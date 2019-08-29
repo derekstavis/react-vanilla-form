@@ -331,7 +331,7 @@ export default class Form extends Component {
   handleSubmit (event) {
     event.preventDefault()
 
-    const errors = this.validateTree({}, this)
+    const errors = this.validateTree(this.state.errors || {}, this)
 
     this.setState(
       { errors },

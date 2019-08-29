@@ -735,6 +735,25 @@ describe('Errors prop', () => {
 
     assertPropsEquals('error', wrapper, merge(baseErrors, errors))
   })
+
+  test('passes errors set via prop to onSubmit callback', () => {
+    const onSubmit = jest.fn();
+
+    const errors = { name: 'Your name is required' }
+
+    const wrapper = mount(
+      <Form
+        errors={errors}
+        onSubmit={onSubmit}
+      >
+        <input name='name' />
+      </Form>
+    );
+
+    submit(wrapper);
+
+    expect(onSubmit).toHaveBeenCalledWith({}, errors);
+  });
 })
 
 describe('Own props', () => {
