@@ -555,13 +555,44 @@ describe('Form Validation', () => {
       <Form
         onChange={onChange}
         data={{
+          name: '',
+          age: '',
+        }}
+        validation={{
+          name: required,
+          age: required
+        }}
+      >
+        <input name="name" />
+        <input name="age" />
+      </Form>
+    )
+
+    focus(wrapper, { name: 'name' })
+    change(wrapper, { name: 'name' }, 'my name')
+
+    const data = { name: 'my name', age: '' }
+    const errors = {}
+
+    expect(onChange).toHaveBeenCalledWith(data, errors)
+  })
+
+  test('does not remove input error message set via props', () => {
+    const onChange = jest.fn()
+
+    const customErrors = {
+      name: 'my name error',
+      age: 'my age error',
+    }
+
+    const wrapper = mount(
+      <Form
+        onChange={onChange}
+        data={{
           name: 'my name',
           age: '20',
         }}
-        errors={{
-          name: 'my name error',
-          age: 'my age error',
-        }}
+        errors={customErrors}
       >
         <input name="name" />
         <input name="age" />
@@ -571,10 +602,12 @@ describe('Form Validation', () => {
     focus(wrapper, { name: 'name' })
     change(wrapper, { name: 'name' }, 'other name')
 
-    const data = {name: 'other name', age: '20'}
-    const errors = {age: 'my age error'}
+    focus(wrapper, { name: 'age' })
+    change(wrapper, { name: 'age' }, '22')
 
-    expect(onChange).toHaveBeenCalledWith(data, errors)
+    const data = { name: 'other name', age: '22' }
+
+    expect(onChange).toHaveBeenCalledWith(data, customErrors)
   })
 })
 
@@ -753,6 +786,62 @@ describe('Errors prop', () => {
     submit(wrapper);
 
     expect(onSubmit).toHaveBeenCalledWith({}, errors);
+  });
+
+  test("keeps props errors after input change", () => {
+    const onSubmit = jest.fn();
+
+    const errors = { name: "Your name is required" };
+
+    const wrapper = mount(
+      <Form
+        data={{
+          name: 'my name'
+        }}
+        errors={errors}
+        onSubmit={onSubmit}
+      >
+        <input name="name" />
+      </Form>
+    );
+
+    focus(wrapper, { name: "name" });
+    change(wrapper, { name: "name" }, "some other name");
+    submit(wrapper);
+
+    expect(onSubmit).toHaveBeenCalledWith({ name: "some other name" }, errors);
+  });
+
+  test("prioritizes props error messages over validation rules", () => {
+    const onSubmit = jest.fn();
+
+    const propsError = { age: "Your age is required" };
+
+    const wrapper = mount(
+      <Form
+        validation={{ age: isNumber }}
+        data={{ age: '' }}
+        errors={propsError}
+        onSubmit={onSubmit}
+      >
+        <input name="age" />
+      </Form>
+    );
+
+    change(wrapper, { name: "age" }, "");
+    submit(wrapper);
+    expect(onSubmit).toHaveBeenCalledWith({ age: "" }, propsError);
+
+    wrapper.setProps({ errors: {} })
+    wrapper.update()
+
+    change(wrapper, { name: "age" }, "my invalid age");
+    submit(wrapper);
+    expect(onSubmit).toHaveBeenCalledWith({ age: "my invalid age" }, { age: 'isNumber' });
+
+    change(wrapper, { name: "age" }, "21");
+    submit(wrapper);
+    expect(onSubmit).toHaveBeenCalledWith({ age: "21" });
   });
 })
 

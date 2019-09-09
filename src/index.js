@@ -91,7 +91,7 @@ export default class Form extends Component {
     }
   }
 
-  componentWillReceiveProps (nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { data, errors: nextErrors } = nextProps
 
     if (data && !equals(data, this.props.data)) {
@@ -111,6 +111,16 @@ export default class Form extends Component {
       return
     }
 
+    if (!equals(this.props.errors, nextErrors)) {
+      const propsErrorsKeys = Object.keys(this.props.errors || {})
+      const cleanedErrors = omit(propsErrorsKeys, this.state.errors || {})
+      this.setState({ errors: merge(nextErrors, cleanedErrors) }, () => {
+        this.validateTree(this.state.errors, this)
+        return;
+      })
+      return;
+    }
+
     this.mergeErrors(nextErrors)
   }
 
@@ -128,6 +138,13 @@ export default class Form extends Component {
     const validation = view(lens, this.props.validation)
 
     if (!validation) {
+      return errors
+    }
+
+    const propsErrors = this.props.errors || {}
+    const isPropsErrorDefined = view(lens, propsErrors)
+
+    if (isPropsErrorDefined) {
       return errors
     }
 
@@ -230,6 +247,7 @@ export default class Form extends Component {
         validateOn,
         customErrorProp: errorProp = 'error',
         keepErrorOnFocus,
+        errors: propsErrors = {}
       } = this.props
 
       let props = {}
@@ -253,7 +271,8 @@ export default class Form extends Component {
         )
       }
 
-      if (validateOn !== 'focus' && !keepErrorOnFocus) {
+      const skipValidation = propsErrors[element.props.name];
+      if (validateOn !== 'focus' && !keepErrorOnFocus && !skipValidation) {
         props.onFocus = partial(
           this.handleEvent,
           ['removeError', path, element.props.onFocus]
