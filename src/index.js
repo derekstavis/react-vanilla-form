@@ -21,6 +21,7 @@ import {
   isNil,
   lensPath,
   merge,
+  keys,
   omit,
   partial,
   partialRight,
@@ -112,12 +113,9 @@ export default class Form extends Component {
     }
 
     if (!equals(this.props.errors, nextErrors)) {
-      const propsErrorsKeys = Object.keys(this.props.errors || {})
+      const propsErrorsKeys = keys(this.props.errors || {})
       const cleanedErrors = omit(propsErrorsKeys, this.state.errors || {})
-      this.setState({ errors: merge(nextErrors, cleanedErrors) }, () => {
-        this.validateTree(this.state.errors, this)
-        return;
-      })
+      this.setState({ errors: merge(nextErrors, cleanedErrors) })
       return;
     }
 
