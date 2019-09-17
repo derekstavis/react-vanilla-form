@@ -245,7 +245,11 @@ export default class Form extends Component {
         validateOn,
         customErrorProp: errorProp = 'error',
         keepErrorOnFocus,
-        errors: propsErrors = {}
+...
+        errors,
+      } = this.props
+      const propsErrors = errors || {}
+...
       } = this.props
 
       let props = {}
