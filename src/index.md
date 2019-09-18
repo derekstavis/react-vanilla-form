@@ -402,7 +402,82 @@ function isNumber (value) {
 ## Setting errors manually
 
 It is possible to overwrite form errors using `errors` prop. This is
-useful for displaying server errors directly in fields.
+useful for controlling your own validations on the parent component. 
+
+> *Important*: in this case, you must control when the error is showed and cleared.
+
+### Possible use cases: 
+
+#### - async validations
+
+```jsx
+const FormState = require('./FormState.js');
+const Input = require('./CustomInput.js');
+
+class ParentComponent extends React.Component {
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      errors: {
+        email: 'email is required'
+      },
+      loading: false
+    }
+
+    this.inputTimeout = 0;
+    this.onEmailChange = this.onEmailChange.bind(this);
+    this.validateEmail = this.validateEmail.bind(this);
+  }
+
+  onEmailChange(value) {
+    if (this.inputTimeout) clearTimeout(this.inputTimeout)
+
+    this.setState({ loading: true, errors: undefined })
+
+    this.inputTimeout = setTimeout(() => {
+      this.validateEmail(value)
+    }, 500)
+  }
+
+  validateEmail(email) {
+    const isValid = email === 'foo@example.com';
+    const errors = isValid ? undefined : { email: 'email already exists' }
+
+    this.setState({
+      loading: false,
+      errors
+    })
+  }
+
+  render() {
+    const { errors, loading } = this.state;
+
+    return (
+      <FormState
+        customErrorProp="errorMessage"
+        errors={errors}
+      >
+        <Input name="email" title="E-mail" onChange={this.onEmailChange} />
+        <button disabled={loading}>{ loading ? 'Loading...' : 'Submit!' }</button>
+
+        <p>In this example, only <strong>foo@example.com</strong> is a valid email</p>
+      </FormState>
+    )
+  }
+}
+
+<ParentComponent />
+
+```
+
+#### - mixing custom errors with `this.props.validations`
+
+Using `errors` prop do not block you from using `validations` prop. You can mix both of them to reduce boilerplate and achieve more complex validations.
+
+> *Important*: `this.props.errors` messages have priority over `validations` ones.
+
+In the example below, we validate both email existence and its length.
 
 ```jsx
 const FormState = require('./FormState.js');
@@ -412,16 +487,70 @@ function required (value) {
   return value ? false : 'This field is required!'
 }
 
-<FormState
-  validation={{ name: required }}
-  customErrorProp="errorMessage"
-  data={{ email: 'foobar.com' }}
-  errors={{ email: 'Invalid e-mail address' }}
->
-  <Input name="email" title="E-mail" />
-  <Input name="password" title="Password" />
-  <button>Submit!</button>
-</FormState>
+function minEmailLength (value) {
+  return value.length > 17 ? false : 'This email is too short' ;
+}
+
+class ParentComponent extends React.Component {
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      errors: {
+        email: undefined
+      },
+      loading: false
+    }
+
+    this.inputTimeout = 0;
+    this.onEmailChange = this.onEmailChange.bind(this);
+    this.validateEmail = this.validateEmail.bind(this);
+  }
+
+  onEmailChange(value) {
+    if (this.inputTimeout) clearTimeout(this.inputTimeout)
+
+    this.setState({ loading: true, errors: undefined })
+
+    this.inputTimeout = setTimeout(() => {
+      this.validateEmail(value)
+    }, 500)
+  }
+
+  validateEmail(email) {
+    const isValid = ['foo@example.com', 'foobar@example.com'].includes(email)
+    const errors = isValid ? undefined : { email: 'This email already exists' }
+
+    this.setState({
+      loading: false,
+      errors
+    })
+  }
+
+  render() {
+    const { errors, loading } = this.state;
+
+    return (
+      <FormState
+        customErrorProp="errorMessage"
+        errors={errors}
+        validateDataProp
+        validation={{
+          email: [required, minEmailLength]
+        }}
+      >
+        <Input name="email" title="E-mail" onChange={this.onEmailChange} />
+        <button disabled={loading}>{ loading ? 'Loading...' : 'Submit!' }</button>
+
+        <p>First, try using "foo@example.com". Then, try "foobar@example.com".</p>
+        <p>Both <strong>foo@example.com</strong> and <strong>foobar@example.com</strong> are available to use, but only the last matches our custom criteria (<code>email.length > 17 </code>)</p>
+      </FormState>
+    )
+  }
+}
+
+<ParentComponent />
+
 ```
 
 ## Getting form data realtime
